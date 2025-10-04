@@ -256,7 +256,7 @@ cp /etc/resolv.conf /mnt/debinst/etc/resolv.conf
 # Run chroot.sh
 cp chroot.sh /mnt/debinst/root/
 cp pkglists.txt /mnt/debinst/root/
-chmod 700 /mnt/root/chroot.sh
+chmod 700 /mnt/debinst/root/chroot.sh /mnt/debinst/root/pkglists.txt
 chroot /mnt/debinst /bin/bash -s <<EOF
 apt-get update || { echo "apt update failed"; exit 1; }
 PKGS="$(grep -Ev '^\s*(#|$)' /root/pkglists.txt | tr '\n' ' ')"
