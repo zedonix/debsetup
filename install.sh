@@ -218,6 +218,8 @@ if [[ "$hardware" == "hardware" && "$howMuch" == "max" ]]; then
 fi
 
 pacman -Sy --noconfirm archlinux-keyring
+mkdir -p /mnt/debinst/etc/apt
+touch /mnt/debinst/etc/apt/sources.list
 echo "deb https://mirror.nitc.ac.in/debian/ stable main contrib non-free" >/mnt/debinst/etc/apt/sources.list
 debootstrap --arch amd64 trixie /mnt/debinst https://mirror.nitc.ac.in/debian/ - <pkglists.txt || {
   echo "debootstrap failed"
