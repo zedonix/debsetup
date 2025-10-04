@@ -236,7 +236,7 @@ UUID=$ROOT_UUID	/	ext4	defaults	0	2
 EOF
 
 # Exporting variables for chroot
-cat >/mnt/root/install.conf <<EOF
+cat >/mnt/debinst/root/install.conf <<EOF
 hostname=$hostname
 hardware=$hardware
 howMuch=$howMuch
@@ -244,7 +244,7 @@ extra=$extra
 username=$username
 part2=$part2
 EOF
-chmod 700 /mnt/root/install.conf
+chmod 700 /mnt/debinst/root/install.conf
 
 # Mount necessary virtual filesystems for chroot
 mount --make-rslave --rbind /proc /mnt/debinst/proc
@@ -254,9 +254,9 @@ mount --make-rslave --rbind /run /mnt/debinst/run
 cp /etc/resolv.conf /mnt/debinst/etc/resolv.conf
 
 # Run chroot.sh
-cp chroot.sh /mnt/root/chroot.sh
-cp pkglists.txt /mnt/root/pkglists.txt
-chmod 700 /mnt/root/chroot.sh
+cp chroot.sh /mnt/debinst/root/chroot.sh
+cp pkglists.txt /mnt/debinst/root/pkglists.txt
+chmod 700 /mnt/debinst/root/chroot.sh
 LANG=C.UTF-8 chroot /mnt/debinst /bin/bash -s <<EOF
 apt-get update || {
   echo "apt update failed"
