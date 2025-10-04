@@ -259,6 +259,8 @@ cp pkglists.txt /mnt/debinst/root/
 chmod 700 /mnt/debinst/root/chroot.sh /mnt/debinst/root/pkglists.txt
 chroot /mnt/debinst /bin/bash -s <<EOF
 apt-get update || { echo "apt update failed"; exit 1; }
+ls -al /root
+cat /root/pkglists.txt
 PKGS="$(grep -Ev '^\s*(#|$)' /root/pkglists.txt | tr '\n' ' ')"
 apt-get install -y $PKGS || { echo "apt install pkglist failed"; exit 1; }
 echo "root:$root_password" | chpasswd
