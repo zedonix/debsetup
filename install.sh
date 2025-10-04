@@ -17,7 +17,7 @@ trap cleanup EXIT
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 cd "$SCRIPT_DIR"
 
-pacman -S debootstrap --noconfirm
+pacman -Sy debootstrap --noconfirm
 
 # Variable set
 username="piyush"
