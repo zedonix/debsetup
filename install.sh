@@ -221,7 +221,6 @@ fi
 mkdir -p /mnt/debinst /mnt/debinst/{proc,sys,dev,run,etc/apt}
 touch /mnt/debinst/etc/apt/sources.list
 printf 'deb https://mirror.nitc.ac.in/debian trixie main contrib non-free\n' >/mnt/debinst/etc/apt/sources.list
-
 debootstrap --variant=minbase --arch=amd64 --components=main,contrib,non-free trixie /mnt/debinst https://mirror.nitc.ac.in/debian/ || {
   echo "debootstrap failed"
   exit 1
@@ -230,6 +229,7 @@ debootstrap --variant=minbase --arch=amd64 --components=main,contrib,non-free tr
 # fstab
 ESP_UUID=$(blkid -s UUID -o value "$part1")
 ROOT_UUID=$(blkid -s UUID -o value "$part2")
+touch /mnt/etc/fstab
 cat >/mnt/etc/fstab <<EOF
 # <file system>	<mount point>	<type>	<options>	<dump>	<pass>
 UUID=$ESP_UUID	/boot	vfat	defaults	0	1
@@ -253,11 +253,6 @@ mount --make-rslave --rbind /sys /mnt/debinst/sys
 mount --make-rslave --rbind /dev /mnt/debinst/dev
 mount --make-rslave --rbind /run /mnt/debinst/run
 cp /etc/resolv.conf /mnt/debinst/etc/resolv.conf
-
-chroot /mnt/debinst apt-get update || {
-  echo "apt update failed"
-  exit 1
-}
 
 # Run chroot.sh
 cp chroot.sh /mnt/root/chroot.sh
