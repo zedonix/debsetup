@@ -254,18 +254,13 @@ mount --make-rslave --rbind /run /mnt/debinst/run
 cp /etc/resolv.conf /mnt/debinst/etc/resolv.conf
 
 # Run chroot.sh
-cp chroot.sh /mnt/debinst/root/chroot.sh
-cp pkglists.txt /mnt/debinst/root/pkglists.txt
-chmod 700 /mnt/debinst/root/chroot.sh
-LANG=C.UTF-8 chroot /mnt/debinst /bin/bash -s <<EOF
-apt-get update || {
-  echo "apt update failed"
-  exit 1
-}
-apt-get install -y $(grep -Ev '^\s*(#|$)' /root/pkglists.txt | tr '\n' ' ') || {
-  echo "apt install pkglist failed"
-  exit 1
-}
+cp chroot.sh /mnt/debinst/root/
+cp pkglists.txt /mnt/debinst/root/
+chmod 700 /mnt/root/chroot.sh
+chroot /mnt/debinst /bin/bash -s <<EOF
+apt-get update || { echo "apt update failed"; exit 1; }
+PKGS="$(grep -Ev '^\s*(#|$)' /root/pkglists.txt | tr '\n' ' ')"
+apt-get install -y $PKGS || { echo "apt install pkglist failed"; exit 1; }
 echo "root:$root_password" | chpasswd
 if [[ "$howMuch" == "max" && "$hardware" == "hardware" ]]; then
   useradd -m -G sudo,video,audio,plugdev,scanner,lpadmin,kvm,libvirt,docker -s /bin/bash "$username"
