@@ -224,8 +224,8 @@ debootstrap --variant=minbase --arch=amd64 --components=main,contrib,non-free tr
   echo "debootstrap failed"
   exit 1
 }
-printf 'deb https://mirror.nitc.ac.in/debian trixie main contrib non-free non-free-firmware\n\
-deb http://security.debian.org/ trixie-security main\n\
+printf 'deb https://mirror.nitc.ac.in/debian trixie main contrib non-free non-free-firmware
+deb http://security.debian.org/ trixie-security main
 deb-src http://security.debian.org/ trixie-security main\n' |
   sudo tee /mnt/debinst/etc/apt/sources.list >/dev/null
 
