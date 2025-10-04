@@ -261,13 +261,14 @@ chroot /mnt/debinst apt-get update || {
 
 # Run chroot.sh
 cp chroot.sh /mnt/root/chroot.sh
+cp pkglists.txt /mnt/root/pkglists.txt
 chmod 700 /mnt/root/chroot.sh
 LANG=C.UTF-8 chroot /mnt/debinst /bin/bash -s <<EOF
 apt-get update || {
   echo "apt update failed"
   exit 1
 }
-apt-get install -y $(grep -Ev '^\s*(#|$)' /path/to/pkglists.txt | tr '\n' ' ') || {
+apt-get install -y $(grep -Ev '^\s*(#|$)' /root/pkglists.txt | tr '\n' ' ') || {
   echo "apt install pkglist failed"
   exit 1
 }
