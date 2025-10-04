@@ -257,14 +257,22 @@ cp /etc/resolv.conf /mnt/debinst/etc/resolv.conf
 cp chroot.sh /mnt/debinst/root/
 cp pkglists.txt /mnt/debinst/root/
 chmod 700 /mnt/debinst/root/chroot.sh /mnt/debinst/root/pkglists.txt
-chroot /mnt/debinst /bin/bash -c '
-  while read -r p; do
-    [ -z "$p" ] && continue
-    case "$p" in \#*) continue ;; esac
-    printf "%-30s " "$p"
-    apt-cache policy "$p" | sed -n "1p"
-  done < /root/pkglists.txt
-'
+chroot /mnt/debinst /bin/bash -s <<EOF
+set -e
+# apt-get update || { echo "apt update failed"; exit 1; }
+apt-cache policy rust-eza
+apt-cache policy intel-microcode
+grep -Ev "^\s*(#|$)" /root/pkglists.txt | tr "\n" "\0" | xargs -0 apt-get install -y
+echo "root:$root_password" | chpasswd
+if [[ "$howMuch" == "max" && "$hardware" == "hardware" ]]; then
+  useradd -m -G sudo,video,audio,plugdev,scanner,lpadmin,kvm,libvirt,docker -s /bin/bash "$username"
+else
+  useradd -m -G sudo,video,audio,lp,plugdev -s /bin/bash "$username"
+fi
+echo "$username:$user_password" | chpasswd
+./root/chroot.sh
+EOF
+
 # Unmount and finalize
 fuser -k /mnt || true
 if mountpoint -q /mnt; then
