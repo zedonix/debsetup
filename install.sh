@@ -229,8 +229,7 @@ debootstrap --variant=minbase --arch=amd64 --components=main,contrib,non-free tr
 # fstab
 ESP_UUID=$(blkid -s UUID -o value "$part1")
 ROOT_UUID=$(blkid -s UUID -o value "$part2")
-touch /mnt/etc/fstab
-cat >/mnt/etc/fstab <<EOF
+cat >/mnt/debinst/etc/fstab <<EOF
 # <file system>	<mount point>	<type>	<options>	<dump>	<pass>
 UUID=$ESP_UUID	/boot	vfat	defaults	0	1
 UUID=$ROOT_UUID	/	ext4	defaults	0	2
