@@ -258,15 +258,9 @@ cp chroot.sh /mnt/debinst/root/
 cp pkglists.txt /mnt/debinst/root/
 chmod 700 /mnt/debinst/root/chroot.sh /mnt/debinst/root/pkglists.txt
 chroot /mnt/debinst /bin/bash -s <<EOF
+set -e
 # apt-get update || { echo "apt update failed"; exit 1; }
-echo dddddddddddddddd
-echo dddddddddddddddd
-echo dddddddddddddddd
-echo dddddddddddddddd
-ls -al /root
-cat /root/pkglists.txt
-PKGS="$(grep -Ev '^\s*(#|$)' /root/pkglists.txt | tr '\n' ' ')"
-apt-get install -y $PKGS || { echo "apt install pkglist failed"; exit 1; }
+grep -Ev "^\s*(#|$)" /root/pkglists.txt | tr "\n" "\0" | xargs -0 apt-get install -y
 echo "root:$root_password" | chpasswd
 if [[ "$howMuch" == "max" && "$hardware" == "hardware" ]]; then
   useradd -m -G sudo,video,audio,plugdev,scanner,lpadmin,kvm,libvirt,docker -s /bin/bash "$username"
