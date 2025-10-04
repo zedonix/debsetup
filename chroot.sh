@@ -18,6 +18,7 @@ hwclock --systohc
 echo "$timezone" >/etc/timezone
 timedatectl set-timezone "$timezone"
 timedatectl set-ntp true
+# dpkg-reconfigure -f noninteractive tzdata
 echo 'LANG="en_US.UTF-8"' >/etc/default/locale
 
 # Sudo Configuration
@@ -352,3 +353,6 @@ fi
 systemctl enable NetworkManager NetworkManager-dispatcher
 systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service
+
+# Cleaning post setup
+apt clean
