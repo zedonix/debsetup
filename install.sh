@@ -218,10 +218,11 @@ if [[ "$hardware" == "hardware" && "$howMuch" == "max" ]]; then
 fi
 
 # pacman -Sy --noconfirm archlinux-keyring
-mkdir -p /mnt/debinst/etc/apt
+mkdir -p /mnt/debinst /mnt/debinst/{proc,sys,dev,run,etc/apt}
 touch /mnt/debinst/etc/apt/sources.list
-echo "deb https://mirror.nitc.ac.in/debian/ stable main contrib non-free" >/mnt/debinst/etc/apt/sources.list
-debootstrap --arch=amd64 --include=$(tr '\n' , <pkglists.txt) trixie /mnt/debinst https://mirror.nitc.ac.in/debian/ || {
+printf 'deb https://mirror.nitc.ac.in/debian trixie main contrib non-free\n' >/mnt/debinst/etc/apt/sources.list
+
+debootstrap --variant=minbase --arch=amd64 --components=main,contrib,non-free trixie /mnt/debinst https://mirror.nitc.ac.in/debian/ || {
   echo "debootstrap failed"
   exit 1
 }
@@ -253,10 +254,23 @@ mount --make-rslave --rbind /dev /mnt/debinst/dev
 mount --make-rslave --rbind /run /mnt/debinst/run
 cp /etc/resolv.conf /mnt/debinst/etc/resolv.conf
 
+chroot /mnt/debinst apt-get update || {
+  echo "apt update failed"
+  exit 1
+}
+
 # Run chroot.sh
 cp chroot.sh /mnt/root/chroot.sh
 chmod 700 /mnt/root/chroot.sh
 LANG=C.UTF-8 chroot /mnt/debinst /bin/bash -s <<EOF
+apt-get update || {
+  echo "apt update failed"
+  exit 1
+}
+apt-get install -y $(grep -Ev '^\s*(#|$)' /path/to/pkglists.txt | tr '\n' ' ') || {
+  echo "apt install pkglist failed"
+  exit 1
+}
 echo "root:$root_password" | chpasswd
 if [[ "$howMuch" == "max" && "$hardware" == "hardware" ]]; then
   useradd -m -G sudo,video,audio,plugdev,scanner,lpadmin,kvm,libvirt,docker -s /bin/bash "$username"
