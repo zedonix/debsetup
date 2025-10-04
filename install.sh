@@ -258,7 +258,11 @@ cp chroot.sh /mnt/debinst/root/
 cp pkglists.txt /mnt/debinst/root/
 chmod 700 /mnt/debinst/root/chroot.sh /mnt/debinst/root/pkglists.txt
 chroot /mnt/debinst /bin/bash -s <<EOF
-apt-get update || { echo "apt update failed"; exit 1; }
+# apt-get update || { echo "apt update failed"; exit 1; }
+echo dddddddddddddddd
+echo dddddddddddddddd
+echo dddddddddddddddd
+echo dddddddddddddddd
 ls -al /root
 cat /root/pkglists.txt
 PKGS="$(grep -Ev '^\s*(#|$)' /root/pkglists.txt | tr '\n' ' ')"
