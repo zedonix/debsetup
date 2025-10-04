@@ -220,7 +220,7 @@ fi
 # pacman -Sy --noconfirm archlinux-keyring
 mkdir -p /mnt/debinst /mnt/debinst/{proc,sys,dev,run,etc/apt}
 touch /mnt/debinst/etc/apt/sources.list
-printf 'deb https://mirror.nitc.ac.in/debian trixie main contrib non-free\n' >/mnt/debinst/etc/apt/sources.list
+printf 'deb https://mirror.nitc.ac.in/debian trixie main contrib non-free non-free-firmware\n' >/mnt/debinst/etc/apt/sources.list
 debootstrap --variant=minbase --arch=amd64 --components=main,contrib,non-free trixie /mnt/debinst https://mirror.nitc.ac.in/debian/ || {
   echo "debootstrap failed"
   exit 1
