@@ -217,11 +217,11 @@ if [[ "$hardware" == "hardware" && "$howMuch" == "max" ]]; then
   esac
 fi
 
-pacman -Sy --noconfirm archlinux-keyring
+# pacman -Sy --noconfirm archlinux-keyring
 mkdir -p /mnt/debinst/etc/apt
 touch /mnt/debinst/etc/apt/sources.list
 echo "deb https://mirror.nitc.ac.in/debian/ stable main contrib non-free" >/mnt/debinst/etc/apt/sources.list
-debootstrap --arch amd64 trixie /mnt/debinst https://mirror.nitc.ac.in/debian/ - <pkglists.txt || {
+debootstrap --arch=amd64 --include=$(tr '\n' , <pkglists.txt) trixie /mnt/debinst https://mirror.nitc.ac.in/debian/ || {
   echo "debootstrap failed"
   exit 1
 }
