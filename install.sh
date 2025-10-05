@@ -51,6 +51,7 @@ if [[ "$hardware" == "hardware" ]]; then
 fi
 
 # Package installation apt
+apt update
 xargs -a pkglist.txt apt install -y
 
 # Boot Manager setup
