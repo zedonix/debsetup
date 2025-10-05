@@ -292,7 +292,7 @@ fi
 
 cat >/boot/efi/loader/entries/debian.conf <<ENTRY
 title   Debian
-linux   /${kernal}
+linux   /${kernel}
 $microcode_img
 initrd  /${initrd}
 options $opts
