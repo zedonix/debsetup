@@ -6,7 +6,7 @@ cd "$SCRIPT_DIR"
 
 # Variable set
 username="piyush"
-uuid=$(blkid /dev/$(lsblk -no PKNAME $(findmnt -no SOURCE /)))
+uuid=$(blkid | grep 'TYPE="crypto_LUKS"' | awk -F 'UUID="' '{print $2}' | cut -d'"' -f1)
 echo $uuid
 exit
 
