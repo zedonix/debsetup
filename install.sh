@@ -63,8 +63,8 @@ cpu_vendor=$(lscpu | awk -F: '/Vendor ID:/ {print $2}' | xargs)
 
 echo "cryptroot UUID=${uuid} none luks,tries=3" | tee /etc/crypttab
 cat >/etc/dracut.conf.d/99-crypt.conf <<EOF
-# Map mkinitcpio HOOKS=(base systemd autodetect microcode modconf kms keyboard consolefont block sd-encrypt filesystems fsck)
-add_dracutmodules+=" crypt microcode systemd fs-lib kernel-modules fsck "
+# Map mkinitcpio HOOKS=(base systemd autodetect modconf kms keyboard consolefont block sd-encrypt filesystems fsck)
+add_dracutmodules+=" crypt systemd fs-lib kernel-modules fsck "
 install_items+="/etc/crypttab /etc/vconsole.conf"
 hostonly="yes"
 EOF
