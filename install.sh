@@ -57,7 +57,7 @@ fi
 
 # Package installation apt
 wget -O- https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/trusted.gpg.d/adoptium.asc
-echo "deb https://packages.adoptium.net/artifactory/deb bookworm main" > /etc/apt/sources.list.d/adoptium.list
+echo "deb https://packages.adoptium.net/artifactory/deb bookworm main" >/etc/apt/sources.list.d/adoptium.list
 apt update
 xargs -a pkglist.txt apt install -y
 
@@ -77,11 +77,11 @@ elif [ -r "$scaling_f" ]; then
   # fallback: read scaling_driver and normalise
   rawdrv=$(cat "$scaling_f" 2>/dev/null || true)
   case "$rawdrv" in
-  *intel* | intel_pstate | intel-pstate)
+  *intel*)
     driver="intel_pstate"
     pstate_supported=true
     ;;
-  *amd* | amd_pstate | amd-pstate)
+  *amd*)
     driver="amd_pstate"
     pstate_supported=true
     ;;
@@ -292,7 +292,7 @@ fi
 
 cat >/boot/efi/loader/entries/debian.conf <<ENTRY
 title   Debian
-linux   /${kfile}
+linux   /${kernal}
 $microcode_img
 initrd  /${initrd}
 options $opts
