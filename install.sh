@@ -6,7 +6,8 @@ cd "$SCRIPT_DIR"
 
 # Variable set
 username="piyush"
-uuid=$(blkid | grep 'TYPE="crypto_LUKS"' | awk -F 'UUID="' '{print $2}' | cut -d'"' -f1)
+uuid=$(blkid -s UUID -o value -t TYPE=crypto_LUKS | head -n1)
+[ -n "$uuid" ] || { echo "no LUKS UUID found" >&2; exit 1; }
 
 # Which type of install?
 # First choice: vm or hardware
