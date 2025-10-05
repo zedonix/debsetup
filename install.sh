@@ -7,8 +7,6 @@ cd "$SCRIPT_DIR"
 # Variable set
 username="piyush"
 uuid=$(blkid | grep 'TYPE="crypto_LUKS"' | awk -F 'UUID="' '{print $2}' | cut -d'"' -f1)
-echo $uuid
-exit
 
 # Which type of install?
 # First choice: vm or hardware
