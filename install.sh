@@ -6,7 +6,9 @@ cd "$SCRIPT_DIR"
 
 # Variable set
 username="piyush"
-uuid=$(blkid -s UUID -o value "$part2")
+uuid=blkid $(findmnt -no SOURCE /) -s UUID -o value
+echo uuid
+exit
 
 # Which type of install?
 # First choice: vm or hardware
