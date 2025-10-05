@@ -1,59 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cleanup() {
-  rc=$?
-  # try to unmount /mnt if mounted
-  if mountpoint -q /mnt; then
-    umount -R /mnt >/dev/null 2>&1 || true
-  fi
-  if ((rc != 0)); then
-    echo "Aborted. Cleaning up..."
-  fi
-  return $rc
-}
-trap cleanup EXIT
-
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 cd "$SCRIPT_DIR"
-
-pacman -Sy debootstrap --noconfirm
 
 # Variable set
 username="piyush"
 
-# --- Prompt Section (collect all user input here) ---
-#
-# Disk Selection
-disks=($(lsblk -dno NAME,TYPE,RM | awk '$2 == "disk" && $3 == "0" {print $1}'))
-echo "Available disks:"
-for i in "${!disks[@]}"; do
-  info=$(lsblk -dno NAME,SIZE,MODEL "/dev/${disks[$i]}")
-  printf "%2d) %s\n" "$((i + 1))" "$info"
-done
-while true; do
-  read -p "Select disk [1-${#disks[@]}]: " idx
-  if [[ "$idx" =~ ^[1-9][0-9]*$ ]] && ((idx >= 1 && idx <= ${#disks[@]})); then
-    disk="/dev/${disks[$((idx - 1))]}"
-    break
-  else
-    echo "Invalid selection. Try again."
-  fi
-done
-mount | grep -q "$disk" && echo "Disk appears to be in use!" && exit 1
-
-# Partition Naming
-if [[ "$disk" == *nvme* ]] || [[ "$disk" == *mmcblk* ]]; then
-  part_prefix="${disk}p"
-else
-  part_prefix="${disk}"
-fi
-
-part1="${part_prefix}1"
-part2="${part_prefix}2"
-
 # Which type of install?
-#
 # First choice: vm or hardware
 echo "Choose one:"
 select hardware in "vm" "hardware"; do
@@ -61,15 +15,8 @@ select hardware in "vm" "hardware"; do
   echo "Invalid choice. Please select 1 for vm or 2 for hardware."
 done
 
-# Second choice: min or max
-echo "Choose one:"
-select howMuch in "min" "max"; do
-  [[ -n $howMuch ]] && break
-  echo "Invalid choice. Please select 1 for min or 2 for max."
-done
-
 # extra choice: laptop or bluetooth or none
-if [[ "$howMuch" == "max" && "$hardware" == "hardware" ]]; then
+if [[ "$hardware" == "hardware" ]]; then
   echo "Choose one:"
   select extra in "laptop" "bluetooth" "none"; do
     [[ -n $extra ]] && break
@@ -79,208 +26,360 @@ else
   extra="none"
 fi
 
-# Hostname
-while true; do
-  read -p "Hostname: " hostname
-  if [[ ! "$hostname" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$ ]]; then
-    echo "Invalid hostname. Use 1-63 letters, digits, or hyphens (not starting or ending with hyphen)."
-    continue
-  fi
-  break
-done
-
-# Root Password
-while true; do
-  read -s -p "Root password: " root_password
-  echo
-  read -s -p "Confirm root password: " root_password2
-  echo
-  [[ "$root_password" != "$root_password2" ]] && echo "Passwords do not match." && continue
-  [[ -z "$root_password" ]] && echo "Password cannot be empty." && continue
-  break
-done
-
-# User Password
-while true; do
-  read -s -p "User password: " user_password
-  echo
-  read -s -p "Confirm user password: " user_password2
-  echo
-  [[ "$user_password" != "$user_password2" ]] && echo "Passwords do not match." && continue
-  [[ -z "$user_password" ]] && echo "Password cannot be empty." && continue
-  break
-done
-
-# Partitioning
-parted -s "$disk" mklabel gpt
-parted -s "$disk" mkpart ESP fat32 1MiB 2049MiB
-parted -s "$disk" set 1 esp on
-parted -s "$disk" mkpart primary ext4 2049MiB 100%
-
-# Format
-mkfs.fat -F32 -n BOOT "$part1"
-mkfs.ext4 -L ROOT "$part2"
-
-# Mount stuff
-mkdir -p /mnt/boot /mnt/debinst
-mount "$part1" /mnt/boot
-mount "$part2" /mnt/debinst
-
-# Detect CPU vendor and set microcode package
-cpu_vendor=$(lscpu | awk -F: '/Vendor ID:/ {print $2}' | xargs)
-if [[ "$cpu_vendor" == "GenuineIntel" ]]; then
-  microcode_pkg="intel-microcode"
-elif [[ "$cpu_vendor" == "AuthenticAMD" ]]; then
-  microcode_pkg="amd64-microcode"
-fi
-
-# microcode and firmware stuff
-#
-cp pkgs.txt pkgss.txt
-sed -i "s|microcode|$microcode_pkg|g" pkgss.txt
-
-# Extracting exact firmware packages
-mapfile -t drivers < <(lspci -k 2>/dev/null | grep -A1 "Kernel driver in use:" | awk -F': ' '/Kernel driver in use:/ {print $2}' | awk '{print $1}')
-declare -A driver_to_pkg=(
-  ["amdgpu"]="firmware-amd-graphics"
-  ["radeon"]="firmware-amd-graphics"
-  ["ath"]="firmware-atheros"
-  ["bnx2x"]="firmware-bnx2x firmware-linux-nonfree"
-  ["tg3"]="firmware-bnx2x firmware-linux-nonfree"
-  ["i915"]="firmware-misc-nonfree"
-  ["iwlwifi"]="firmware-iwlwifi"
-  ["liquidio"]="firmware-liquidio"
-  ["mwl8k"]="firmware-marvell"
-  ["mt76"]="firmware-mediatek"
-  ["mlx"]="firmware-mellanox"
-  ["nfp"]="firmware-nfp"
-  ["qcom"]="firmware-qcom"
-  ["qede"]="firmware-qlogic"
-  ["r8169"]="firmware-realtek"
-  ["rtw"]="firmware-realtek"
-)
-
-# Identify required packages
-required_pkgs=()
-for driver in "${drivers[@]}"; do
-  if [[ -n "${driver_to_pkg[$driver]:-}" ]]; then
-    required_pkgs+=("${driver_to_pkg[$driver]}")
-  fi
-done
-
-# Deduplication
-required_pkgs=($(printf "%s\n" "${required_pkgs[@]}" | sort -u))
-
-# Converting in a single string to replace firmware
-firmware_string=""
-for pkg in "${required_pkgs[@]}"; do
-  firmware_string+="$pkg "
-done
-firmware_string="${firmware_string% }"
-if [[ -z "$firmware_string" ]]; then
-  firmware_string="linux-firmware"
-fi
-sed -i "s|linux-firmware|$firmware_string|g" pkgss.txt
-
 # Which type of packages?
 # Main package selection
-case "$hardware:$howMuch" in
-vm:min)
-  sed -n '1p' pkgss.txt | tr ' ' '\n' | grep -v '^$' >pkglists.txt
+case "$hardware" in
+vm)
+  sed -n '1p;2p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
   ;;
-vm:max)
-  sed -n '1p;3p' pkgss.txt | tr ' ' '\n' | grep -v '^$' >pkglists.txt
-  ;;
-hardware:min)
-  sed -n '1,2p' pkgss.txt | head -n 2 | tr ' ' '\n' | grep -v '^$' >pkglists.txt
-  ;;
-hardware:max)
-  # For hardware:max, we will add lines 5 and/or 6 later based on $extra
-  sed -n '1,4p' pkgss.txt | tr ' ' '\n' | grep -v '^$' >pkglists.txt
+hardware)
+  sed -n '1,3p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
   ;;
 esac
 
 # For hardware:max, add lines 5 and/or 6 based on $extra
-if [[ "$hardware" == "hardware" && "$howMuch" == "max" ]]; then
+if [[ "$hardware" == "hardware" ]]; then
   case "$extra" in
   laptop)
-    # Add both line 5 and 6
-    sed -n '5,6p' pkgss.txt | tr ' ' '\n' | grep -v '^$' >>pkglists.txt
+    sed -n '4,5p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
     ;;
   bluetooth)
-    # Add only line 5
-    sed -n '5p' pkgss.txt | tr ' ' '\n' | grep -v '^$' >>pkglists.txt
+    sed -n '4p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
     ;;
-  none)
-    # Do not add line 5 or 6
-    ;;
+  none) ;;
   esac
 fi
 
-# pacman -Sy --noconfirm archlinux-keyring
-mkdir -p /mnt/debinst /mnt/debinst/{proc,sys,dev,run,etc/apt}
-touch /mnt/debinst/etc/apt/sources.list
-debootstrap --variant=minbase --arch=amd64 --components=main,contrib,non-free trixie /mnt/debinst https://mirror.nitc.ac.in/debian/ || {
-  echo "debootstrap failed"
-  exit 1
-}
-printf 'deb https://mirror.nitc.ac.in/debian trixie main contrib non-free non-free-firmware
-deb http://security.debian.org/ trixie-security main
-deb-src http://security.debian.org/ trixie-security main\n' |
-  sudo tee /mnt/debinst/etc/apt/sources.list >/dev/null
+# Package installation apt
+xargs -a pkglist.txt apt install -y
 
-# fstab
-ESP_UUID=$(blkid -s UUID -o value "$part1")
-ROOT_UUID=$(blkid -s UUID -o value "$part2")
-cat >/mnt/debinst/etc/fstab <<EOF
-# <file system>	<mount point>	<type>	<options>	<dump>	<pass>
-UUID=$ESP_UUID	/boot	vfat	defaults	0	1
-UUID=$ROOT_UUID	/	ext4	defaults	0	2
+# Boot Manager setup
+kver="$(uname -r)"
+kernel="/boot/vmlinuz-${kver}"
+initrd="/boot/initrd.img-${kver}.img"
+cpu_vendor=$(lscpu | awk -F: '/Vendor ID:/ {print $2}' | xargs)
+
+echo "cryptroot UUID=${uuid} none luks,tries=3" | tee /etc/crypttab
+cat >/etc/dracut.conf.d/99-crypt.conf <<EOF
+# Map mkinitcpio HOOKS=(base systemd autodetect microcode modconf kms keyboard consolefont block sd-encrypt filesystems fsck)
+add_dracutmodules+=" crypt microcode systemd fs-lib kernel-modules fsck "
+install_items+="/etc/crypttab /etc/vconsole.conf"
+hostonly="yes"
+EOF
+dracut -f --kver "$kver"
+# tee /etc/vconsole.conf >/dev/null <<EOF
+# KEYMAP=us
+# FONT=latarcyrheb-sun32
+# EOF
+
+if [[ "$cpu_vendor" == "GenuineIntel" ]]; then
+  microcode_img="initrd /intel-ucode.img"
+elif [[ "$cpu_vendor" == "AuthenticAMD" ]]; then
+  microcode_img="initrd /amd-ucode.img"
+fi
+
+bootctl install
+
+cat >/boot/efi/loader/loader.conf <<EOF
+default debian
+timeout 3
+editor no
 EOF
 
-# Exporting variables for chroot
-cat >/mnt/debinst/root/install.conf <<EOF
-hostname=$hostname
-hardware=$hardware
-howMuch=$howMuch
-extra=$extra
-username=$username
-part2=$part2
-EOF
-chmod 700 /mnt/debinst/root/install.conf
-
-# Mount necessary virtual filesystems for chroot
-mount --make-rslave --rbind /proc /mnt/debinst/proc
-mount --make-rslave --rbind /sys /mnt/debinst/sys
-mount --make-rslave --rbind /dev /mnt/debinst/dev
-mount --make-rslave --rbind /run /mnt/debinst/run
-cp /etc/resolv.conf /mnt/debinst/etc/resolv.conf
-
-# Run chroot.sh
-cp chroot.sh /mnt/debinst/root/
-cp pkglists.txt /mnt/debinst/root/
-chmod 700 /mnt/debinst/root/chroot.sh /mnt/debinst/root/pkglists.txt
-LANG=C.UTF-8 chroot /mnt/debinst /bin/bash -s <<EOF
-set -e
-# apt-get update || { echo "apt update failed"; exit 1; }
-apt-cache policy rust-eza
-apt-cache policy intel-microcode
-grep -Ev "^\s*(#|$)" /root/pkglists.txt | tr "\n" "\0" | xargs -0 apt-get install -y
-echo "root:$root_password" | chpasswd
-if [[ "$howMuch" == "max" && "$hardware" == "hardware" ]]; then
-  useradd -m -G sudo,video,audio,plugdev,scanner,lpadmin,kvm,libvirt,docker -s /bin/bash "$username"
+# common options base
+opts_base="rd.luks.name=${uuid}=cryptroot root=/dev/mapper/cryptroot SYSTEMD_COLORS=1 rw fsck.repair=yes zswap.enabled=0 rootfstype=ext4"
+if [[ -n "$pstate_param" ]]; then
+  opts="$opts_base $pstate_param"
 else
-  useradd -m -G sudo,video,audio,lp,plugdev -s /bin/bash "$username"
+  opts="$opts_base"
 fi
-echo "$username:$user_password" | chpasswd
-./root/chroot.sh
+
+cat >/boot/efi/loader/entries/debian.conf <<ENTRY
+title   Debian
+linux   /${kfile}
+$microcode_img
+initrd  /${initrd}
+options $opts
+ENTRY
+
+# Sudo Configuration
+echo "%wheel ALL=(ALL) ALL" >/etc/sudoers.d/wheel
+echo "Defaults timestamp_timeout=-1" >/etc/sudoers.d/timestamp
+echo "Defaults pwfeedback" >/etc/sudoers.d/pwfeedback
+echo "XDG_RUNTIME_DIR WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS WAYLAND_SOCKET" >/etc/sudoers.d/wayland
+chmod 440 /etc/sudoers.d/*
+
+# Tlp setup
+# Robust detection: prefer explicit pstate driver dirs if present, fallback to scaling_driver text
+scaling_f="/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver"
+pstate_supported=false
+driver=""
+if [ -d /sys/devices/system/cpu/intel_pstate ]; then
+  driver="intel_pstate"
+  pstate_supported=true
+elif [ -d /sys/devices/system/cpu/amd_pstate ] || [ -d /sys/devices/system/cpu/amd-pstate ]; then
+  # kernel docs and kernels may expose amd_pstate/amd-pstate; accept either
+  driver="amd_pstate"
+  pstate_supported=true
+elif [ -r "$scaling_f" ]; then
+  # fallback: read scaling_driver and normalise
+  rawdrv=$(cat "$scaling_f" 2>/dev/null || true)
+  case "$rawdrv" in
+  *intel* | intel_pstate | intel-pstate)
+    driver="intel_pstate"
+    pstate_supported=true
+    ;;
+  *amd* | amd_pstate | amd-pstate)
+    driver="amd_pstate"
+    pstate_supported=true
+    ;;
+  *) driver="$rawdrv" ;;
+  esac
+fi
+
+# Kernel parameter to encourage pstate driver mode on next boot (set only when pstate is supported)
+pstate_param=""
+if [ "$pstate_supported" = true ]; then
+  if [ "$driver" = "intel_pstate" ]; then
+    # prefer 'active' for AC; we'll keep TLP switching to 'passive' on BAT to allow schedutil there.
+    pstate_param="intel_pstate=active"
+  elif [ "$driver" = "amd_pstate" ]; then
+    # amd_pstate supports active/passive/guided depending on kernel; active is a reasonable default.
+    pstate_param="amd_pstate=active"
+  fi
+fi
+
+# Write base TLP config (safe defaults; adjust values below if you want more aggressive perf)
+if [[ "$extra" == "laptop" ]]; then
+  cat >/etc/tlp.conf <<EOF
+# Generated by installer - baseline TLP config
+PLATFORM_PROFILE_ON_AC=performance
+PLATFORM_PROFILE_ON_BAT=low-power
+
+# PCIe ASPM: prefer default on AC (don't force performance), aggressive on battery
+PCIE_ASPM_ON_AC=default
+PCIE_ASPM_ON_BAT=powersupersave
+
+USB_AUTOSUSPEND=1
+USB_EXCLUDE_BTUSB=0
+USB_EXCLUDE_PHONE=1
+
+# Runtime PM (use new name)
+RUNTIME_PM_ON_AC=on
+RUNTIME_PM_ON_BAT=auto
+RUNTIME_PM_DRIVER_DENYLIST="amdgpu nouveau nvidia"
+
+WIFI_PWR_ON_AC=off
+WIFI_PWR_ON_BAT=on
+
+SOUND_POWER_SAVE_ON_AC=0
+SOUND_POWER_SAVE_ON_BAT=1
+
+DISK_APM_LEVEL_ON_AC="254 254"
+DISK_APM_LEVEL_ON_BAT="128 128"
+
+# Per-disk IO scheduler: use mq-deadline as safe default (leave kernel default with 'keep')
+DISK_IOSCHED="none mq-deadline kyber bfq"
+
+SATA_LINKPWR_ON_AC=max_performance
+SATA_LINKPWR_ON_BAT=min_power
+
+# Charging thresholds (only functional if tlp-rdw and hardware support)
+START_CHARGE_THRESH_BAT0=40
+STOP_CHARGE_THRESH_BAT0=80
 EOF
 
-# Unmount and finalize
-fuser -k /mnt || true
-if mountpoint -q /mnt; then
-  umount -R /mnt || {
-    echo "Failed to unmount /mnt. Please check."
-    exit 1
-  }
+  # CPU-specific settings by driver
+  if [ "$driver" = "intel_pstate" ]; then
+    # Use 'active' for AC (intel internal algorithms), use 'passive' on BAT so schedutil can be selected
+    cat >>/etc/tlp.conf <<EOF
+# Intel pstate tuning
+CPU_DRIVER_OPMODE_ON_AC=active
+CPU_DRIVER_OPMODE_ON_BAT=passive
+CPU_SCALING_GOVERNOR_ON_AC=performance
+CPU_SCALING_GOVERNOR_ON_BAT=schedutil
+CPU_ENERGY_PERF_POLICY_ON_AC=performance
+CPU_ENERGY_PERF_POLICY_ON_BAT=balance_power
+CPU_BOOST_ON_AC=1
+CPU_BOOST_ON_BAT=0
+EOF
+
+  elif [ "$driver" = "amd_pstate" ]; then
+    # For AMD: prefer active when the new energy/CPP features exist, otherwise fall back to using schedutil
+    if [ -f /sys/devices/system/cpu/cpufreq/policy0/energy_performance_preference ]; then
+      cat >>/etc/tlp.conf <<EOF
+# AMD pstate with energy perf preference support
+CPU_DRIVER_OPMODE_ON_AC=active
+CPU_DRIVER_OPMODE_ON_BAT=active
+CPU_SCALING_GOVERNOR_ON_AC=performance
+CPU_SCALING_GOVERNOR_ON_BAT=powersave
+CPU_ENERGY_PERF_POLICY_ON_AC=performance
+CPU_ENERGY_PERF_POLICY_ON_BAT=power
+CPU_BOOST_ON_AC=1
+CPU_BOOST_ON_BAT=0
+EOF
+    else
+      cat >>/etc/tlp.conf <<EOF
+# AMD pstate older kernels - keep schedutil
+CPU_DRIVER_OPMODE_ON_AC=passive
+CPU_DRIVER_OPMODE_ON_BAT=passive
+CPU_SCALING_GOVERNOR_ON_AC=schedutil
+CPU_SCALING_GOVERNOR_ON_BAT=schedutil
+CPU_BOOST_ON_AC=1
+CPU_BOOST_ON_BAT=0
+EOF
+    fi
+
+  else
+    # Generic fallback: use schedutil both AC/BAT
+    cat >>/etc/tlp.conf <<EOF
+# Generic CPUfreq fallback
+CPU_DRIVER_OPMODE_ON_AC=passive
+CPU_DRIVER_OPMODE_ON_BAT=passive
+CPU_SCALING_GOVERNOR_ON_AC=schedutil
+CPU_SCALING_GOVERNOR_ON_BAT=schedutil
+CPU_BOOST_ON_AC=1
+CPU_BOOST_ON_BAT=0
+EOF
+  fi
 fi
+
+# Copy config and dotfiles as the user
+su - "$username" -c '
+  mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
+  mkdir -p ~/Documents/projects/default ~/Documents/projects/work ~/Documents/projects/sandbox ~/Documents/personal/wiki
+  mkdir -p ~/.local/bin ~/.cache/cargo-target ~/.local/state/bash ~/.local/state/zsh ~/.local/share/wineprefixes
+  touch ~/.local/state/bash/history ~/.local/state/zsh/history ~/Documents/personal/wiki/index.txt ~/Documents/personal/wiki/clipboard.txt
+
+  git clone https://github.com/zedonix/scripts.git ~/Documents/projects/default/scripts
+  git clone https://github.com/zedonix/dotfiles.git ~/Documents/projects/default/dotfiles
+  git clone https://github.com/zedonix/debsetup.git ~/Documents/projects/default/debsetup
+  git clone https://github.com/zedonix/notes.git ~/Documents/projects/default/notes
+  git clone https://github.com/zedonix/GruvboxGtk.git ~/Documents/projects/default/GruvboxGtk
+  git clone https://github.com/zedonix/GruvboxQT.git ~/Documents/projects/default/GruvboxQT
+
+  cp ~/Documents/projects/default/dotfiles/.config/sway/archLogo.png ~/Pictures/
+  cp ~/Documents/projects/default/dotfiles/pics/* ~/Pictures/
+  ln -sf ~/Documents/projects/default/dotfiles/.bashrc ~/.bashrc
+  ln -sf ~/Documents/projects/default/dotfiles/.zshrc ~/.zshrc
+
+  for link in ~/Documents/projects/default/dotfiles/.config/*; do
+    ln -sf "$link" ~/.config/
+  done
+  for link in ~/Documents/projects/default/dotfiles/.copy/*; do
+    cp -r "$link" ~/.config/
+  done
+  for link in ~/Documents/projects/default/scripts/bin/*; do
+    ln -sf "$link" ~/.local/bin/
+  done
+  git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
+
+  flatpak install -y org.gtk.Gtk3theme.Adwaita-dark
+  flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
+  # flatpak install -y flathub org.gimp.GIMP
+  # flatpak install -y flathub io.gitlab.theevilskeleton.Upscaler
+  # flatpak install -y flathub com.github.wwmm.easyeffects
+  # flatpak install -y flathub com.github.d4nj1.tlpui
+
+  #ollama pull gemma3:1b
+  #ollama pull codellama:7b-instruct
+'
+# Root .config
+mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
+echo '[[ -f ~/.bashrc ]] && . ~/.bashrc' >~/.bash_profile
+touch ~/.local/state/zsh/history ~/.local/state/bash/history
+ln -sf /home/$username/Documents/projects/default/dotfiles/.bashrc ~/.bashrc
+ln -sf /home/$username/Documents/projects/default/dotfiles/.zshrc ~/.zshrc
+ln -sf /home/$username/Documents/projects/default/dotfiles/.config/starship.toml ~/.config
+ln -sf /home/$username/Documents/projects/default/dotfiles/.config/nvim/ ~/.config
+
+# ly config
+# -e 's/^bigclock *= *.*/bigclock = en/' \
+sed -i \
+  -e 's/^allow_empty_password *= *.*/allow_empty_password = false/' \
+  -e 's/^clear_password *= *.*/clear_password = true/' \
+  -e 's/^clock *= *.*/clock = %a %d\/%m %H:%M/' \
+  /etc/ly/config.ini
+
+# Rustup
+rustup default stable
+rustup update
+
+# Setup Gruvbox theme
+THEME_SRC="/home/$username/Documents/projects/default/GruvboxQT"
+THEME_DEST="/usr/share/Kvantum/Gruvbox"
+mkdir -p "$THEME_DEST"
+cp "$THEME_SRC/gruvbox-kvantum.kvconfig" "$THEME_DEST/Gruvbox.kvconfig"
+cp "$THEME_SRC/gruvbox-kvantum.svg" "$THEME_DEST/Gruvbox.svg"
+kvantummanager --set Gruvbox
+
+THEME_SRC="/home/$username/Documents/projects/default/GruvboxGtk"
+THEME_DEST="/usr/share"
+cp -r "$THEME_SRC/themes/Gruvbox-Material-Dark" "$THEME_DEST/themes"
+cp -r "$THEME_SRC/icons/Gruvbox-Material-Dark" "$THEME_DEST/icons"
+
+# Anancy-cpp rules
+git clone --depth=1 https://github.com/RogueScholar/ananicy.git
+git clone --depth=1 https://github.com/CachyOS/ananicy-rules.git
+mkdir -p /etc/ananicy.d/roguescholar /etc/ananicy.d/zz-cachyos
+cp -r ananicy/ananicy.d/* /etc/ananicy.d/roguescholar/
+cp -r ananicy-rules/00-default/* /etc/ananicy.d/zz-cachyos/
+cp -r ananicy-rules/00-types.types /etc/ananicy.d/zz-cachyos/
+cp -r ananicy-rules/00-cgroups.cgroups /etc/ananicy.d/zz-cachyos/
+tee /etc/ananicy.d/ananicy.conf >/dev/null <<'EOF'
+check_freq = 15
+cgroup_load = false
+type_load = true
+rule_load = true
+apply_nice = true
+apply_latnice = true
+apply_ionice = true
+apply_sched = true
+apply_oom_score_adj = true
+apply_cgroup = true
+loglevel = info
+log_applied_rule = false
+cgroup_realtime_workaround = false
+EOF
+
+# Firefox policy
+mkdir -p /etc/firefox/policies
+ln -sf "/home/$username/Documents/projects/default/dotfiles/policies.json" /etc/firefox/policies/policies.json
+
+# Delete variables
+shred -u /root/install.conf
+
+# zram config
+# Get total memory in MiB
+TOTAL_MEM=$(awk '/MemTotal/ {print int($2 / 1024)}' /proc/meminfo)
+ZRAM_SIZE=$((TOTAL_MEM / 2))
+
+# Create zram config
+mkdir -p /etc/systemd/zram-generator.conf.d
+{
+  echo "[zram0]"
+  echo "zram-size = ${ZRAM_SIZE}"
+  echo "compression-algorithm = zstd #lzo-rle"
+  echo "swap-priority = 100"
+  echo "fs-type = swap"
+} >/etc/systemd/zram-generator.conf.d/00-zram.conf
+
+# Services
+# rfkill unblock bluetooth
+# modprobe btusb || true
+if [[ "$hardware" == "hardware" ]]; then
+  systemctl enable fstrim.timer acpid libvirtd.socket cups ipp-usb docker.socket
+fi
+if [[ "$extra" == "laptop" || "$extra" == "bluetooth" ]]; then
+  systemctl enable bluetooth
+fi
+if [[ "$extra" == "laptop" ]]; then
+  systemctl enable tlp
+fi
+systemctl enable ananicy-cpp anacron sshd
+systemctl enable NetworkManager NetworkManager-dispatcher
+systemctl mask systemd-rfkill systemd-rfkill.socket
+systemctl disable NetworkManager-wait-online.service
+
+# Cleaning post setup
+apt clean

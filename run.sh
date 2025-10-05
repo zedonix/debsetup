@@ -113,8 +113,6 @@ fi
 
 # A anacron job
 echo "30 5 trash-empty-job su - piyush -c \"$(which trash-empty)\"" | sudo tee -a /etc/anacrontab
-echo "1 5 snap-root-job /home/piyush/.local/bin/snap-root.sh" | sudo tee -a /etc/anacrontab
-echo "1 5 snap-home-job /home/piyush/.local/bin/snap-home.sh" | sudo tee -a /etc/anacrontab
 
 # Nvim tools install
 foot -e nvim +MasonToolsInstall &
