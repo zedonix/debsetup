@@ -6,7 +6,7 @@ cd "$SCRIPT_DIR"
 
 # Variable set
 username="piyush"
-uuid=blkid $(findmnt -no SOURCE /) -s UUID -o value
+uuid=blkid /dev/$(lsblk -no PKNAME $(findmnt -no SOURCE /))
 echo uuid
 exit
 
