@@ -7,7 +7,10 @@ cd "$SCRIPT_DIR"
 # Variable set
 username="piyush"
 uuid=$(blkid -s UUID -o value -t TYPE=crypto_LUKS | head -n1)
-[ -n "$uuid" ] || { echo "no LUKS UUID found" >&2; exit 1; }
+[ -n "$uuid" ] || {
+  echo "no LUKS UUID found" >&2
+  exit 1
+}
 
 # Which type of install?
 # First choice: vm or hardware
@@ -53,6 +56,8 @@ if [[ "$hardware" == "hardware" ]]; then
 fi
 
 # Package installation apt
+wget -O- https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/trusted.gpg.d/adoptium.asc
+echo "deb https://packages.adoptium.net/artifactory/deb bookworm main" > /etc/apt/sources.list.d/adoptium.list
 apt update
 xargs -a pkglist.txt apt install -y
 
@@ -64,7 +69,7 @@ cpu_vendor=$(lscpu | awk -F: '/Vendor ID:/ {print $2}' | xargs)
 
 echo "cryptroot UUID=${uuid} none luks,tries=3" | tee /etc/crypttab
 # create hook: /etc/initramfs-tools/hooks/consolefont
-tee /etc/initramfs-tools/hooks/consolefont > /dev/null <<'HOOK'
+tee /etc/initramfs-tools/hooks/consolefont >/dev/null <<'HOOK'
 #!/bin/sh
 set -e
 PREREQ=""
@@ -106,7 +111,7 @@ chmod 0755 /etc/initramfs-tools/hooks/consolefont
 
 # 2) create init-top script: /etc/initramfs-tools/scripts/init-top/set-console-font
 mkdir -p /etc/initramfs-tools/scripts/init-top
-tee /etc/initramfs-tools/scripts/init-top/set-console-font > /dev/null <<'SCRIPT'
+tee /etc/initramfs-tools/scripts/init-top/set-console-font >/dev/null <<'SCRIPT'
 #!/bin/sh
 set -e
 # run early to set console font for cryptsetup prompt
