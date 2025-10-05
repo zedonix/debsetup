@@ -61,115 +61,6 @@ echo "deb https://packages.adoptium.net/artifactory/deb bookworm main" > /etc/ap
 apt update
 xargs -a pkglist.txt apt install -y
 
-# Boot Manager setup
-kver="$(uname -r)"
-kernel="/boot/vmlinuz-${kver}"
-initrd="/boot/initrd.img-${kver}.img"
-cpu_vendor=$(lscpu | awk -F: '/Vendor ID:/ {print $2}' | xargs)
-
-echo "cryptroot UUID=${uuid} none luks,tries=3" | tee /etc/crypttab
-# create hook: /etc/initramfs-tools/hooks/consolefont
-tee /etc/initramfs-tools/hooks/consolefont >/dev/null <<'HOOK'
-#!/bin/sh
-set -e
-PREREQ=""
-prereqs(){ echo "$PREREQ"; }
-case "$1" in
-  prereqs) prereqs; exit 0;;
-esac
-. /usr/share/initramfs-tools/hook-functions
-
-# copy setfont binary (use copy_exec so libs are pulled in)
-SETFONT_PATH="$(command -v setfont 2>/dev/null || true)"
-if [ -n "$SETFONT_PATH" ]; then
-  # try to place it in /bin inside initramfs, fallback to /usr/bin
-  copy_exec "$SETFONT_PATH" /bin 2>/dev/null || copy_exec "$SETFONT_PATH" /usr/bin 2>/dev/null || true
-fi
-
-# copy /etc/vconsole.conf if present
-if [ -f /etc/vconsole.conf ]; then
-  mkdir -p "${DESTDIR}/etc"
-  cp -a /etc/vconsole.conf "${DESTDIR}/etc/vconsole.conf" 2>/dev/null || true
-fi
-
-# copy common consolefonts directory (if present)
-if [ -d /usr/share/consolefonts ]; then
-  mkdir -p "${DESTDIR}/usr/share/consolefonts"
-  cp -a /usr/share/consolefonts/* "${DESTDIR}/usr/share/consolefonts/" 2>/dev/null || true
-fi
-
-# copy console-setup files (optional)
-if [ -d /etc/console-setup ]; then
-  mkdir -p "${DESTDIR}/etc/console-setup"
-  cp -a /etc/console-setup/* "${DESTDIR}/etc/console-setup/" 2>/dev/null || true
-fi
-
-exit 0
-HOOK
-
-chmod 0755 /etc/initramfs-tools/hooks/consolefont
-
-# 2) create init-top script: /etc/initramfs-tools/scripts/init-top/set-console-font
-mkdir -p /etc/initramfs-tools/scripts/init-top
-tee /etc/initramfs-tools/scripts/init-top/set-console-font >/dev/null <<'SCRIPT'
-#!/bin/sh
-set -e
-# run early to set console font for cryptsetup prompt
-if [ -r /etc/vconsole.conf ]; then
-  . /etc/vconsole.conf
-  if [ -n "$FONT" ] && command -v setfont >/dev/null 2>&1; then
-    # try FONT as given, then try common locations
-    setfont "$FONT" 2>/dev/null || \
-      setfont "/usr/share/consolefonts/${FONT}.psf.gz" 2>/dev/null || \
-      setfont "/usr/share/consolefonts/${FONT}.psf" 2>/dev/null || true
-  fi
-fi
-exit 0
-SCRIPT
-
-chmod 0755 /etc/initramfs-tools/scripts/init-top/set-console-font
-
-update-initramfs -u -k "$(uname -r)"
-# tee /etc/vconsole.conf >/dev/null <<EOF
-# KEYMAP=us
-# FONT=latarcyrheb-sun32
-# EOF
-
-if [[ "$cpu_vendor" == "GenuineIntel" ]]; then
-  microcode_img="initrd /intel-ucode.img"
-elif [[ "$cpu_vendor" == "AuthenticAMD" ]]; then
-  microcode_img="initrd /amd-ucode.img"
-fi
-
-cat >/boot/efi/loader/loader.conf <<EOF
-default debian
-timeout 3
-editor no
-EOF
-
-# common options base
-opts_base="rd.luks.name=${uuid}=cryptroot root=/dev/mapper/cryptroot SYSTEMD_COLORS=1 rw fsck.repair=yes zswap.enabled=0 rootfstype=ext4"
-if [[ -n "$pstate_param" ]]; then
-  opts="$opts_base $pstate_param"
-else
-  opts="$opts_base"
-fi
-
-cat >/boot/efi/loader/entries/debian.conf <<ENTRY
-title   Debian
-linux   /${kfile}
-$microcode_img
-initrd  /${initrd}
-options $opts
-ENTRY
-
-# Sudo Configuration
-echo "%wheel ALL=(ALL) ALL" >/etc/sudoers.d/wheel
-echo "Defaults timestamp_timeout=-1" >/etc/sudoers.d/timestamp
-echo "Defaults pwfeedback" >/etc/sudoers.d/pwfeedback
-echo "XDG_RUNTIME_DIR WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS WAYLAND_SOCKET" >/etc/sudoers.d/wayland
-chmod 440 /etc/sudoers.d/*
-
 # Tlp setup
 # Robust detection: prefer explicit pstate driver dirs if present, fallback to scaling_driver text
 scaling_f="/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver"
@@ -304,6 +195,115 @@ CPU_BOOST_ON_BAT=0
 EOF
   fi
 fi
+
+# Boot Manager setup
+kver="$(uname -r)"
+kernel="/boot/vmlinuz-${kver}"
+initrd="/boot/initrd.img-${kver}.img"
+cpu_vendor=$(lscpu | awk -F: '/Vendor ID:/ {print $2}' | xargs)
+
+echo "cryptroot UUID=${uuid} none luks,tries=3" | tee /etc/crypttab
+# create hook: /etc/initramfs-tools/hooks/consolefont
+tee /etc/initramfs-tools/hooks/consolefont >/dev/null <<'HOOK'
+#!/bin/sh
+set -e
+PREREQ=""
+prereqs(){ echo "$PREREQ"; }
+case "$1" in
+  prereqs) prereqs; exit 0;;
+esac
+. /usr/share/initramfs-tools/hook-functions
+
+# copy setfont binary (use copy_exec so libs are pulled in)
+SETFONT_PATH="$(command -v setfont 2>/dev/null || true)"
+if [ -n "$SETFONT_PATH" ]; then
+  # try to place it in /bin inside initramfs, fallback to /usr/bin
+  copy_exec "$SETFONT_PATH" /bin 2>/dev/null || copy_exec "$SETFONT_PATH" /usr/bin 2>/dev/null || true
+fi
+
+# copy /etc/vconsole.conf if present
+if [ -f /etc/vconsole.conf ]; then
+  mkdir -p "${DESTDIR}/etc"
+  cp -a /etc/vconsole.conf "${DESTDIR}/etc/vconsole.conf" 2>/dev/null || true
+fi
+
+# copy common consolefonts directory (if present)
+if [ -d /usr/share/consolefonts ]; then
+  mkdir -p "${DESTDIR}/usr/share/consolefonts"
+  cp -a /usr/share/consolefonts/* "${DESTDIR}/usr/share/consolefonts/" 2>/dev/null || true
+fi
+
+# copy console-setup files (optional)
+if [ -d /etc/console-setup ]; then
+  mkdir -p "${DESTDIR}/etc/console-setup"
+  cp -a /etc/console-setup/* "${DESTDIR}/etc/console-setup/" 2>/dev/null || true
+fi
+
+exit 0
+HOOK
+
+chmod 0755 /etc/initramfs-tools/hooks/consolefont
+
+# 2) create init-top script: /etc/initramfs-tools/scripts/init-top/set-console-font
+mkdir -p /etc/initramfs-tools/scripts/init-top
+tee /etc/initramfs-tools/scripts/init-top/set-console-font >/dev/null <<'SCRIPT'
+#!/bin/sh
+set -e
+# run early to set console font for cryptsetup prompt
+if [ -r /etc/vconsole.conf ]; then
+  . /etc/vconsole.conf
+  if [ -n "$FONT" ] && command -v setfont >/dev/null 2>&1; then
+    # try FONT as given, then try common locations
+    setfont "$FONT" 2>/dev/null || \
+      setfont "/usr/share/consolefonts/${FONT}.psf.gz" 2>/dev/null || \
+      setfont "/usr/share/consolefonts/${FONT}.psf" 2>/dev/null || true
+  fi
+fi
+exit 0
+SCRIPT
+
+chmod 0755 /etc/initramfs-tools/scripts/init-top/set-console-font
+
+update-initramfs -u -k "$(uname -r)"
+# tee /etc/vconsole.conf >/dev/null <<EOF
+# KEYMAP=us
+# FONT=latarcyrheb-sun32
+# EOF
+
+if [[ "$cpu_vendor" == "GenuineIntel" ]]; then
+  microcode_img="initrd /intel-ucode.img"
+elif [[ "$cpu_vendor" == "AuthenticAMD" ]]; then
+  microcode_img="initrd /amd-ucode.img"
+fi
+
+cat >/boot/efi/loader/loader.conf <<EOF
+default debian
+timeout 3
+editor no
+EOF
+
+# common options base
+opts_base="rd.luks.name=${uuid}=cryptroot root=/dev/mapper/cryptroot SYSTEMD_COLORS=1 rw fsck.repair=yes zswap.enabled=0 rootfstype=ext4"
+if [[ -n "$pstate_param" ]]; then
+  opts="$opts_base $pstate_param"
+else
+  opts="$opts_base"
+fi
+
+cat >/boot/efi/loader/entries/debian.conf <<ENTRY
+title   Debian
+linux   /${kfile}
+$microcode_img
+initrd  /${initrd}
+options $opts
+ENTRY
+
+# Sudo Configuration
+echo "%wheel ALL=(ALL) ALL" >/etc/sudoers.d/wheel
+echo "Defaults timestamp_timeout=-1" >/etc/sudoers.d/timestamp
+echo "Defaults pwfeedback" >/etc/sudoers.d/pwfeedback
+echo "XDG_RUNTIME_DIR WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS WAYLAND_SOCKET" >/etc/sudoers.d/wayland
+chmod 440 /etc/sudoers.d/*
 
 # Copy config and dotfiles as the user
 su - "$username" -c '
