@@ -6,8 +6,8 @@ cd "$SCRIPT_DIR"
 
 # Variable set
 username="piyush"
-uuid=$(blkid -s UUID -o value $(lsblk -no NAME,MOUNTPOINT | grep ' /$' | sed 's|_crypt||'))
-echo uuid
+uuid=$(blkid /dev/$(lsblk -no PKNAME $(findmnt -no SOURCE /)))
+echo $uuid
 exit
 
 # Which type of install?
