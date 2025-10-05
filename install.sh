@@ -6,7 +6,7 @@ cd "$SCRIPT_DIR"
 
 # Variable set
 username="piyush"
-uuid=blkid /dev/$(lsblk -no PKNAME $(findmnt -no SOURCE /))
+uuid=$(blkid -s UUID -o value $(lsblk -no NAME,MOUNTPOINT | grep ' /$' | sed 's|_crypt||'))
 echo uuid
 exit
 
