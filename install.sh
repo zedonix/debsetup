@@ -30,10 +30,10 @@ fi
 # Main package selection
 case "$hardware" in
 vm)
-  sed -n '1p;2p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
+  sed -n '1p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
   ;;
 hardware)
-  sed -n '1,3p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
+  sed -n '1p;2p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
   ;;
 esac
 
@@ -41,10 +41,10 @@ esac
 if [[ "$hardware" == "hardware" ]]; then
   case "$extra" in
   laptop)
-    sed -n '4,5p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
+    sed -n '3;4p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
     ;;
   bluetooth)
-    sed -n '4p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
+    sed -n '3p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
     ;;
   none) ;;
   esac
