@@ -55,11 +55,49 @@ if [[ "$hardware" == "hardware" ]]; then
   esac
 fi
 
+pkgfile="${1:-pkglist.txt}"
+[ -f "$pkgfile" ] || {
+  echo "pkglist.txt not found"
+  exit 2
+}
+
+>installed_already.txt
+>not_installed.txt
+
+while IFS= read -r line || [ -n "$line" ]; do
+  pkg=$(printf '%s' "$line" | sed 's/#.*//' | tr -d '\r' | xargs) # strip comments & trim
+  [ -z "$pkg" ] && continue
+  if dpkg -s "$pkg" >/dev/null 2>&1; then
+    echo "$pkg" >>installed_already.txt
+  else
+    echo "$pkg" >>not_installed.txt
+  fi
+done <"$pkgfile"
+
+pkgfile="${1:-pkglist.txt}"
+
+[ -f "$pkgfile" ] || { echo "Error: $pkgfile not found" >&2; exit 2; }
+
+while IFS= read -r line || [ -n "$line" ]; do
+  # strip comments and whitespace
+  pkg="${line%%#*}"
+  pkg="$(printf '%s' "$pkg" | xargs)"   # trim
+  [ -z "$pkg" ] && continue
+
+  if dpkg -s "$pkg" >/dev/null 2>&1; then
+    ver=$(dpkg-query -W -f='${Version}' "$pkg" 2>/dev/null || echo "unknown")
+    echo "$pkg: INSTALLED ($ver)"
+  else
+    echo "$pkg: MISSING"
+  fi
+done < "$pkgfile"
+exit
+xargs -a pkglist.txt -r dpkg-query -W -f='${Package} ${Version}\n' 2>/dev/null | sort
 # Package installation apt
 wget -O- https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/trusted.gpg.d/adoptium.asc
 echo "deb https://packages.adoptium.net/artifactory/deb bookworm main" >/etc/apt/sources.list.d/adoptium.list
 apt update
-xargs -a pkglist.txt apt install -y > log
+xargs -a pkglist.txt apt install -y
 
 # Tlp setup
 # Robust detection: prefer explicit pstate driver dirs if present, fallback to scaling_driver text
