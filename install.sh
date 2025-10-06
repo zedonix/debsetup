@@ -310,7 +310,7 @@ su - "$username" -c '
   mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
   mkdir -p ~/Documents/personal/default ~/Documents/projects/work ~/Documents/projects/sandbox ~/Documents/personal/wiki
   mkdir -p ~/.local/bin ~/.cache/cargo-target ~/.local/state/bash ~/.local/state/zsh ~/.local/share/wineprefixes
-  touch ~/.local/state/bash/history ~/.local/state/zsh/history ~/Documents/personal/wiki/index.txt ~/Documents/personal/wiki/clipboard.txt
+  touch ~/.local/state/bash/history ~/.local/state/zsh/history ~/Documents/personal/wiki/index.txt
 
   git clone https://github.com/zedonix/scripts.git ~/Documents/personal/default/scripts
   git clone https://github.com/zedonix/dotfiles.git ~/Documents/personal/default/dotfiles
@@ -343,13 +343,11 @@ su - "$username" -c '
   curl -LO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IosevkaTerm.zip
   unzip IosevkaTerm.zip
   rm IosevkaTerm.zip
-  # wl-clip-persist
-  export PATH="$HOME/.cargo/bin:$PATH"
-  git clone https://github.com/Linus789/wl-clip-persist.git
-  cd wl-clip-persist
-  cargo build --release
-  install -Dm755 target/release/wl-clip-persist /usr/local/bin/wl-clip-persist
+
+  go install github.com/savedra1/clipse@v1.1.0
 '
+corepack enable
+corepack prepare pnpm@latest --activate
 # sway-idle-inhibit
 cd /root
 git clone https://github.com/ErikReider/SwayAudioIdleInhibit.git
@@ -369,13 +367,20 @@ cd /root
 git clone https://codeberg.org/newsraft/newsraft.git
 cd newscraft
 make
-make install
+checkinstall
 # ly
 cd /root
 git clone https://codeberg.org/fairyglade/ly.git
 cd ly
 zig build -Dinit_system=systemd -Dtarget=x86_64-linux-gnu -Denable_x11_support=false 2>&1 | tee ~/ly-build.log
 zig build installexe -Dinit_system=systemd
+# ananicy-cpp
+wget https://gitlab.com/ananicy-cpp/ananicy-cpp/-/archive/v1.1.1/ananicy-cpp-v1.1.1.tar.gz
+tar -xvf ananicy-cpp-v1.1.1.tar.gz
+cd ananicy-cpp-v1.1.1
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SYSTEMD=ON -DUSE_BPF_PROC_IMPL=ON
+cmake --build build --target ananicy-cpp -j$(nproc)
+cmake --install build --component Runtime
 
 # Root .config
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
@@ -468,10 +473,12 @@ fi
 if [[ "$extra" == "laptop" ]]; then
   systemctl enable tlp
 fi
-# systemctl enable ananicy-cpp anacron sshd
+systemctl enable ananicy-cpp anacron sshd
 systemctl enable NetworkManager NetworkManager-dispatcher
 systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service
 
 # Cleaning post setup
+apt remove --purge -y checkinstall build-essential meson cmake ninja-build g++ libsystemd-dev libpam0g-dev libbpf-dev libelf-dev clang zlib1g-dev pkg-config dwarves bpftool
+apt autoremove --purge -y
 apt clean
