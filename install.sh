@@ -364,11 +364,17 @@ cd newsraft
 make
 make install
 # ly
+wget https://ziglang.org/download/0.15.0/zig-linux-x86_64-0.15.0.tar.xz
+tar -xf zig-linux-x86_64-0.15.0.tar.xz
+mv zig-linux-x86_64-0.15.0 /opt/zig
+ln -s /opt/zig/zig /usr/local/bin/zig
 cd /root
 git clone https://codeberg.org/fairyglade/ly.git
 cd ly
 zig build -Dinit_system=systemd -Dtarget=x86_64-linux-gnu -Denable_x11_support=false 2>&1 | tee ~/ly-build.log
 zig build installexe -Dinit_system=systemd
+rm -rf /opt/zig
+rm -f /usr/local/bin/zig
 # ananicy-cpp
 wget https://gitlab.com/ananicy-cpp/ananicy-cpp/-/archive/v1.1.1/ananicy-cpp-v1.1.1.tar.gz
 tar -xvf ananicy-cpp-v1.1.1.tar.gz
@@ -474,6 +480,6 @@ systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service
 
 # Cleaning post setup
-apt remove --purge -y libc6-dev libpam0g-dev zig build-essential cmake g++ libsystemd-dev libsqlite3-dev libgumbo-dev libexpat1-dev libcurl4-openssl-dev libpam0g-dev libbpf-dev libelf-dev clang zlib1g-dev pkg-config dwarves bpftool
+apt remove --purge -y libc6-dev libpam0g-dev build-essential cmake g++ libsystemd-dev libsqlite3-dev libgumbo-dev libexpat1-dev libcurl4-openssl-dev libpam0g-dev libbpf-dev libelf-dev clang zlib1g-dev pkg-config dwarves bpftool
 apt autoremove --purge -y
 apt clean
