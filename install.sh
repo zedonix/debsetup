@@ -364,10 +364,10 @@ cd newsraft
 make
 make install
 # ly
-wget https://ziglang.org/download/0.15.0/zig-linux-x86_64-0.15.0.tar.xz
+curl -LO https://ziglang.org/download/0.15.0/zig-linux-x86_64-0.15.0.tar.xz
 tar -xf zig-linux-x86_64-0.15.0.tar.xz
 mv zig-linux-x86_64-0.15.0 /opt/zig
-ln -s /opt/zig/zig /usr/local/bin/zig
+ln -sf /opt/zig/zig /usr/local/bin/zig
 cd /root
 git clone https://codeberg.org/fairyglade/ly.git
 cd ly
