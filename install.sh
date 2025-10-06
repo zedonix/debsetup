@@ -357,10 +357,10 @@ su - "$username" -c '
 '
 corepack enable
 corepack prepare pnpm@latest --activate
-# Newscraft
+# Newsraft
 cd /root
 git clone https://codeberg.org/newsraft/newsraft.git
-cd newscraft
+cd newsraft
 make
 checkinstall
 # ly
