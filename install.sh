@@ -348,11 +348,11 @@ ln -sf /home/$username/Documents/personal/default/dotfiles/.config/nvim/ ~/.conf
 
 # ly config
 # -e 's/^bigclock *= *.*/bigclock = en/' \
-sed -i \
-  -e 's/^allow_empty_password *= *.*/allow_empty_password = false/' \
-  -e 's/^clear_password *= *.*/clear_password = true/' \
-  -e 's/^clock *= *.*/clock = %a %d\/%m %H:%M/' \
-  /etc/ly/config.ini
+# sed -i \
+#   -e 's/^allow_empty_password *= *.*/allow_empty_password = false/' \
+#   -e 's/^clear_password *= *.*/clear_password = true/' \
+#   -e 's/^clock *= *.*/clock = %a %d\/%m %H:%M/' \
+#   /etc/ly/config.ini
 
 # Rustup
 rustup default stable
@@ -429,7 +429,7 @@ fi
 if [[ "$extra" == "laptop" ]]; then
   systemctl enable tlp
 fi
-systemctl enable ananicy-cpp anacron sshd
+# systemctl enable ananicy-cpp anacron sshd
 systemctl enable NetworkManager NetworkManager-dispatcher
 systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service
