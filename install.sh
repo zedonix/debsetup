@@ -478,7 +478,7 @@ fi
 if [[ "$extra" == "laptop" ]]; then
   systemctl enable tlp
 fi
-systemctl enable ananicy-cpp anacron sshd
+systemctl enable ananicy-cpp anacron sshd ly
 systemctl enable NetworkManager NetworkManager-dispatcher
 systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service
