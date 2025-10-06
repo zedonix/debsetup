@@ -338,11 +338,20 @@ su - "$username" -c '
   zoxide add /home/piyush/Documents/personal/default/archsetup
 
   # Iosevka
+  cd ~/Downloads/
   mkdir -p ~/.local/share/fonts/iosevka
   cd ~/.local/share/fonts/iosevka
   curl -LO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IosevkaTerm.zip
   unzip IosevkaTerm.zip
   rm IosevkaTerm.zip
+
+  # Bemoji
+  cd ~/Downloads/
+  git clone https://github.com/marty-oehme/bemoji
+  chmod +x bemoji/bemoji
+  mv bemoji/bemoji ~/.local/bin
+  ./bemoji/bemoji --download all
+  rm -r bemoji
 
   go install github.com/savedra1/clipse@v1.1.0
 '
