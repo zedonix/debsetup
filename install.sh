@@ -370,7 +370,7 @@ make install
 # ly
 curl -LO https://ziglang.org/download/0.15.1/zig-x86_64-linux-0.15.1.tar.xz
 tar -xf zig-x86_64-linux-0.15.1.tar.xz
-mv zig-linux-x86_64-0.15.1 /opt/zig
+mv zig-x86_64-linux-0.15.1 /opt/zig
 ln -sf /opt/zig/zig /usr/local/bin/zig
 cd /root
 git clone https://codeberg.org/fairyglade/ly.git
