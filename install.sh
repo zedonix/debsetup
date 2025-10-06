@@ -46,7 +46,7 @@ esac
 if [[ "$hardware" == "hardware" ]]; then
   case "$extra" in
   laptop)
-    sed -n '3;4p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
+    sed -n '3p;4p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
     ;;
   bluetooth)
     sed -n '3p' pkgs.txt | tr ' ' '\n' | grep -v '^$' >>pkglist.txt
