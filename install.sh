@@ -349,28 +349,14 @@ su - "$username" -c '
   cd ~/Downloads/
   git clone https://github.com/marty-oehme/bemoji
   chmod +x bemoji/bemoji
-  mv bemoji/bemoji ~/.local/bin
   ./bemoji/bemoji --download all
-  rm -r bemoji
+  mv bemoji/bemoji ~/.local/bin
+  rm -rf bemoji
 
   go install github.com/savedra1/clipse@v1.1.0
 '
 corepack enable
 corepack prepare pnpm@latest --activate
-# sway-idle-inhibit
-cd /root
-git clone https://github.com/ErikReider/SwayAudioIdleInhibit.git
-cd SwayAudioIdleInhibit
-meson setup build -Dlogind-provider=systemd
-meson compile -C build
-meson install -C build
-# Poweralertd
-cd /root
-git clone https://github.com/kennylevinsen/poweralertd.git
-cd poweralertd
-meson setup build
-ninja -C build
-ninja -C build install
 # Newscraft
 cd /root
 git clone https://codeberg.org/newsraft/newsraft.git
@@ -488,6 +474,6 @@ systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service
 
 # Cleaning post setup
-apt remove --purge -y checkinstall build-essential meson cmake ninja-build g++ libsystemd-dev libpam0g-dev libbpf-dev libelf-dev clang zlib1g-dev pkg-config dwarves bpftool
+apt remove --purge -y checkinstall build-essential cmake g++ libsystemd-dev libpam0g-dev libbpf-dev libelf-dev clang zlib1g-dev pkg-config dwarves bpftool
 apt autoremove --purge -y
 apt clean
