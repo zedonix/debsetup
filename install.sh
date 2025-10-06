@@ -304,6 +304,8 @@ echo "Defaults timestamp_timeout=-1" >/etc/sudoers.d/timestamp
 echo "Defaults pwfeedback" >/etc/sudoers.d/pwfeedback
 echo "XDG_RUNTIME_DIR WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS WAYLAND_SOCKET" >/etc/sudoers.d/wayland
 chmod 440 /etc/sudoers.d/*
+usermod -aG docker,libvirt,flatpak,sudo piyush
+usermod -aG adm,cdrom,dip,plugdev,lpadmin,video,audio,input,kvm netdev piyush
 
 # Copy config and dotfiles as the user
 su - "$username" -c '
@@ -364,9 +366,9 @@ cd newsraft
 make
 make install
 # ly
-curl -LO https://ziglang.org/download/0.15.0/zig-linux-x86_64-0.15.0.tar.xz
-tar -xf zig-linux-x86_64-0.15.0.tar.xz
-mv zig-linux-x86_64-0.15.0 /opt/zig
+curl -LO https://ziglang.org/download/0.15.1/zig-x86_64-linux-0.15.1.tar.xz
+tar -xf zig-x86_64-linux-0.15.1.tar.xz
+mv zig-linux-x86_64-0.15.1 /opt/zig
 ln -sf /opt/zig/zig /usr/local/bin/zig
 cd /root
 git clone https://codeberg.org/fairyglade/ly.git
