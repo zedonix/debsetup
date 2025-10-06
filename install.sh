@@ -55,14 +55,11 @@ if [[ "$hardware" == "hardware" ]]; then
   esac
 fi
 
-bash pls.sh
-exit
-
 # Package installation apt
 wget -O- https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/trusted.gpg.d/adoptium.asc
 echo "deb https://packages.adoptium.net/artifactory/deb bookworm main" >/etc/apt/sources.list.d/adoptium.list
 apt update
-xargs -a pkglist.txt apt install -y
+xargs -a pkglist.txt apt install -y > log
 
 # Tlp setup
 # Robust detection: prefer explicit pstate driver dirs if present, fallback to scaling_driver text
@@ -307,8 +304,10 @@ echo "Defaults timestamp_timeout=-1" >/etc/sudoers.d/timestamp
 echo "Defaults pwfeedback" >/etc/sudoers.d/pwfeedback
 echo "XDG_RUNTIME_DIR WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS WAYLAND_SOCKET" >/etc/sudoers.d/wayland
 chmod 440 /etc/sudoers.d/*
-usermod -aG docker,libvirt,flatpak,sudo piyush
-usermod -aG adm,cdrom,dip,plugdev,lpadmin,video,audio,input,kvm netdev piyush
+if [[ "$hardware" == "hardware" ]]; then
+  usermod -aG docker,libvirt piyush
+fi
+usermod -aG sudo,adm,cdrom,dip,plugdev,lpadmin,video,audio,input,kvm netdev piyush
 
 # Copy config and dotfiles as the user
 su - "$username" -c '
