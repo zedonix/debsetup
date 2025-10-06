@@ -484,6 +484,6 @@ systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service
 
 # Cleaning post setup
-apt remove --purge -y libc6-dev libpam0g-dev build-essential cmake g++ libsystemd-dev libsqlite3-dev libgumbo-dev libexpat1-dev libcurl4-openssl-dev libpam0g-dev libbpf-dev libelf-dev clang zlib1g-dev pkg-config dwarves bpftool
+apt remove --purge -y libpam0g-dev libc6-dev libpam0g-dev build-essential cmake g++ libsystemd-dev libsqlite3-dev libgumbo-dev libexpat1-dev libcurl4-openssl-dev libpam0g-dev libbpf-dev libelf-dev clang zlib1g-dev pkg-config dwarves bpftool
 apt autoremove --purge -y
 apt clean
