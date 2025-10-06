@@ -336,7 +336,47 @@ su - "$username" -c '
   done
   git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
   zoxide add /home/piyush/Documents/personal/default/archsetup
+
+  # Iosevka
+  mkdir -p ~/.local/share/fonts/iosevka
+  cd ~/.local/share/fonts/iosevka
+  curl -LO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IosevkaTerm.zip
+  unzip IosevkaTerm.zip
+  rm IosevkaTerm.zip
+  # wl-clip-persist
+  export PATH="$HOME/.cargo/bin:$PATH"
+  git clone https://github.com/Linus789/wl-clip-persist.git
+  cd wl-clip-persist
+  cargo build --release
+  install -Dm755 target/release/wl-clip-persist /usr/local/bin/wl-clip-persist
 '
+# sway-idle-inhibit
+cd /root
+git clone https://github.com/ErikReider/SwayAudioIdleInhibit.git
+cd SwayAudioIdleInhibit
+meson setup build -Dlogind-provider=systemd
+meson compile -C build
+meson install -C build
+# Poweralertd
+cd /root
+git clone https://github.com/kennylevinsen/poweralertd.git
+cd poweralertd
+meson setup build
+ninja -C build
+ninja -C build install
+# Newscraft
+cd /root
+git clone https://codeberg.org/newsraft/newsraft.git
+cd newscraft
+make
+make install
+# ly
+cd /root
+git clone https://codeberg.org/fairyglade/ly.git
+cd ly
+zig build -Dinit_system=systemd -Dtarget=x86_64-linux-gnu -Denable_x11_support=false 2>&1 | tee ~/ly-build.log
+zig build installexe -Dinit_system=systemd
+
 # Root .config
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
 echo '[[ -f ~/.bashrc ]] && . ~/.bashrc' >~/.bash_profile
@@ -348,11 +388,11 @@ ln -sf /home/$username/Documents/personal/default/dotfiles/.config/nvim/ ~/.conf
 
 # ly config
 # -e 's/^bigclock *= *.*/bigclock = en/' \
-# sed -i \
-#   -e 's/^allow_empty_password *= *.*/allow_empty_password = false/' \
-#   -e 's/^clear_password *= *.*/clear_password = true/' \
-#   -e 's/^clock *= *.*/clock = %a %d\/%m %H:%M/' \
-#   /etc/ly/config.ini
+sed -i \
+  -e 's/^allow_empty_password *= *.*/allow_empty_password = false/' \
+  -e 's/^clear_password *= *.*/clear_password = true/' \
+  -e 's/^clock *= *.*/clock = %a %d\/%m %H:%M/' \
+  /etc/ly/config.ini
 
 # Rustup
 rustup default stable
@@ -364,7 +404,6 @@ THEME_DEST="/usr/share/Kvantum/Gruvbox"
 mkdir -p "$THEME_DEST"
 cp "$THEME_SRC/gruvbox-kvantum.kvconfig" "$THEME_DEST/Gruvbox.kvconfig"
 cp "$THEME_SRC/gruvbox-kvantum.svg" "$THEME_DEST/Gruvbox.svg"
-kvantummanager --set Gruvbox
 
 THEME_SRC="/home/$username/Documents/personal/default/GruvboxGtk"
 THEME_DEST="/usr/share"
