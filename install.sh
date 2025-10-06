@@ -305,9 +305,9 @@ echo "Defaults pwfeedback" >/etc/sudoers.d/pwfeedback
 echo "XDG_RUNTIME_DIR WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS WAYLAND_SOCKET" >/etc/sudoers.d/wayland
 chmod 440 /etc/sudoers.d/*
 if [[ "$hardware" == "hardware" ]]; then
-  usermod -aG docker,libvirt,lpadmin piyush
+  usermod -aG docker,libvirt,kvm,lpadmin piyush
 fi
-usermod -aG sudo,adm,cdrom,dip,plugdev,video,audio,input,kvm netdev piyush
+usermod -aG sudo,adm,cdrom,plugdev,video,audio,input,netdev piyush
 
 # Copy config and dotfiles as the user
 su - "$username" -c '
