@@ -55,6 +55,9 @@ if [[ "$hardware" == "hardware" ]]; then
   esac
 fi
 
+bash pls.sh
+exit
+
 # Package installation apt
 wget -O- https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/trusted.gpg.d/adoptium.asc
 echo "deb https://packages.adoptium.net/artifactory/deb bookworm main" >/etc/apt/sources.list.d/adoptium.list
