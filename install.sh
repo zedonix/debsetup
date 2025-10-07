@@ -379,49 +379,6 @@ zig build -Dinit_system=systemd -Denable_x11_support=false --verbose
 zig build installexe -Dinit_system=systemd
 rm -rf /opt/zig
 rm -f /usr/local/bin/zig
-# ananicy-cpp
-cd /root
-rm -f ananicy-cpp-v1.1.1.tar.gz
-wget -q https://gitlab.com/ananicy-cpp/ananicy-cpp/-/archive/v1.1.1/ananicy-cpp-v1.1.1.tar.gz -O ananicy-cpp-v1.1.1.tar.gz
-tar -xf ananicy-cpp-v1.1.1.tar.gz
-cd ananicy-cpp-v1.1.1
-
-# Patch conflicting definitions
-FILES=$(grep -RIl --exclude-dir=build --exclude-dir=.git -e "struct\s\+sched_attr" -e "sched_getattr" -e "sched_setattr" . || true)
-if [ ! -z "$FILES" ]; then
-  for f in $FILES; do
-    if grep -q "SCHED_ATTR_SIZE_VER0" "$f"; then
-      continue
-    fi
-    cp "$f" "$f.bak"
-    # Wrap struct sched_attr definition
-    awk '
-      BEGIN { inside=0; braces=0 }
-      /struct[ \t]+sched_attr/ {
-        print "#if !defined(SCHED_ATTR_SIZE_VER0)"
-        inside=1
-      }
-      {
-        if (inside) {
-          braces += gsub(/\{/, "{")
-          braces -= gsub(/\}/, "}")
-          print
-          if (braces == 0 && /\};/) {
-            print "#endif /* !SCHED_ATTR_SIZE_VER0 */"
-            inside=0
-          }
-        } else {
-          print
-        }
-      }
-    ' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
-    # Wrap prototypes sched_getattr / sched_setattr
-    perl -0777 -pe 's/(^[ \t]*(?:extern[ \t]+)?[^\n{;]*(sched_getattr|sched_setattr)[^\n{;]*;[ \t]*\n)/#if !defined(SCHED_ATTR_SIZE_VER0)\n$1#endif\n/gim' -i "$f"
-  done
-fi
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SYSTEMD=ON -DUSE_BPF_PROC_IMPL=ON
-cmake --build build --target ananicy-cpp -j$(nproc)
-sudo cmake --install build --component Runtime
 # sway-idle-inhibit
 cd /root
 git clone https://github.com/ErikReider/SwayAudioIdleInhibit
@@ -462,30 +419,6 @@ THEME_DEST="/usr/share"
 cp -r "$THEME_SRC/themes/Gruvbox-Material-Dark" "$THEME_DEST/themes"
 cp -r "$THEME_SRC/icons/Gruvbox-Material-Dark" "$THEME_DEST/icons"
 
-# Anancy-cpp rules
-git clone --depth=1 https://github.com/RogueScholar/ananicy.git
-git clone --depth=1 https://github.com/CachyOS/ananicy-rules.git
-mkdir -p /etc/ananicy.d/roguescholar /etc/ananicy.d/zz-cachyos
-cp -r ananicy/ananicy.d/* /etc/ananicy.d/roguescholar/
-cp -r ananicy-rules/00-default/* /etc/ananicy.d/zz-cachyos/
-cp -r ananicy-rules/00-types.types /etc/ananicy.d/zz-cachyos/
-cp -r ananicy-rules/00-cgroups.cgroups /etc/ananicy.d/zz-cachyos/
-tee /etc/ananicy.d/ananicy.conf >/dev/null <<'EOF'
-check_freq = 15
-cgroup_load = false
-type_load = true
-rule_load = true
-apply_nice = true
-apply_latnice = true
-apply_ionice = true
-apply_sched = true
-apply_oom_score_adj = true
-apply_cgroup = true
-loglevel = info
-log_applied_rule = false
-cgroup_realtime_workaround = false
-EOF
-
 # Firefox policy
 mkdir -p /etc/firefox/policies
 ln -sf "/home/$username/Documents/personal/default/dotfiles/policies.json" /etc/firefox/policies/policies.json
@@ -520,7 +453,7 @@ fi
 if [[ "$extra" == "laptop" ]]; then
   systemctl enable tlp
 fi
-systemctl enable ananicy-cpp anacron sshd ly
+systemctl enable anacron sshd ly
 systemctl enable NetworkManager NetworkManager-dispatcher
 systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service
