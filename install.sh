@@ -260,6 +260,7 @@ su - "$username" -c '
   rm -rf bemoji
 
   go install github.com/savedra1/clipse@v1.1.0
+  cargo install wayland-pipewire-idle-inhibit
 '
 corepack enable
 corepack prepare pnpm@latest --activate
@@ -281,13 +282,6 @@ zig build -Dinit_system=systemd -Denable_x11_support=false --verbose
 zig build installexe -Dinit_system=systemd
 rm -rf /opt/zig
 rm -f /usr/local/bin/zig
-# sway-idle-inhibit
-cd /root
-git clone https://github.com/ErikReider/SwayAudioIdleInhibit.git
-cd SwayAudioIdleInhibit
-meson setup build -Dlogind-provider=systemd
-meson compile -C build
-meson install -C build
 
 # Root .config
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
