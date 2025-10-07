@@ -260,6 +260,8 @@ su - "$username" -c '
   rm -rf bemoji
 
   go install github.com/savedra1/clipse@v1.1.0
+  rustup default stable
+  rustup update
   cargo install wayland-pipewire-idle-inhibit
 '
 corepack enable
@@ -299,10 +301,6 @@ sed -i \
   -e 's/^clear_password *= *.*/clear_password = true/' \
   -e 's/^clock *= *.*/clock = %a %d\/%m %H:%M/' \
   /etc/ly/config.ini
-
-# Rustup
-rustup default stable
-rustup update
 
 # Setup Gruvbox theme
 THEME_SRC="/home/$username/Documents/personal/default/GruvboxQT"
