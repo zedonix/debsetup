@@ -383,7 +383,7 @@ rm -f /usr/local/bin/zig
 wget https://gitlab.com/ananicy-cpp/ananicy-cpp/-/archive/v1.1.1/ananicy-cpp-v1.1.1.tar.gz
 tar -xvf ananicy-cpp-v1.1.1.tar.gz
 cd ananicy-cpp-v1.1.1
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SYSTEMD=ON -DUSE_BPF_PROC_IMPL=ON
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SYSTEMD=ON -DUSE_BPF_PROC_IMPL=OFF
 cmake --build build --target ananicy-cpp -j$(nproc)
 cmake --install build --component Runtime
 
@@ -484,6 +484,6 @@ systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service
 
 # Cleaning post setup
-apt remove --purge -y libc6-dev build-essential cmake g++ libsystemd-dev libxcb-xkb-dev libsqlite3-dev libgumbo-dev libexpat1-dev libcurl4-openssl-dev libpam0g-dev libbpf-dev libelf-dev clang zlib1g-dev pkg-config dwarves bpftool
+apt remove --purge -y libxcb-xkb-dev libc6-dev libpam0g-dev build-essential cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev libpam0g-dev pkg-config
 apt autoremove --purge -y
 apt clean
