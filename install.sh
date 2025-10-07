@@ -381,12 +381,36 @@ rm -rf /opt/zig
 rm -f /usr/local/bin/zig
 # ananicy-cpp
 cd /root
-wget https://gitlab.com/ananicy-cpp/ananicy-cpp/-/archive/v1.1.1/ananicy-cpp-v1.1.1.tar.gz
-tar -xvf ananicy-cpp-v1.1.1.tar.gz
+rm -f ananicy-cpp-v1.1.1.tar.gz
+wget -q https://gitlab.com/ananicy-cpp/ananicy-cpp/-/archive/v1.1.1/ananicy-cpp-v1.1.1.tar.gz -O ananicy-cpp-v1.1.1.tar.gz
+tar -xf ananicy-cpp-v1.1.1.tar.gz
 cd ananicy-cpp-v1.1.1
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SYSTEMD=ON -DUSE_BPF_PROC_IMPL=OFF
+
+# Patch conflicting definitions
+FILES=$(grep -RIl --exclude-dir=build --exclude-dir=.git -e "struct\s\+sched_attr" -e "sched_getattr" -e "sched_setattr" . || true)
+if [ ! -z "$FILES" ]; then
+  for f in $FILES; do
+    if grep -q "SCHED_ATTR_SIZE_VER0" "$f"; then
+      continue
+    fi
+    cp -- "$f" "$f.bak"
+    awk '
+    BEGIN { in=0; braces=0; }
+    /^\s*struct\s+sched_attr\b/ { print "#if !defined(SCHED_ATTR_SIZE_VER0)"; in=1; open=gsub(/\{/, "{"); close=gsub(/\}/, "}"); braces += open-close; print; next }
+    {
+      if (in) {
+        open=gsub(/\{/, "{"); close=gsub(/\}/, "}"); braces += open-close;
+        print;
+        if (braces<=0 && /\};/) { print "#endif /* !SCHED_ATTR_SIZE_VER0 */"; in=0; braces=0 }
+      } else { print }
+    }
+    END { if (in) print "#endif /* !SCHED_ATTR_SIZE_VER0 (fallback) */" }' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+    perl -0777 -pe 's{(^[ \t]*(?:extern[ \t]+)?[^\n{;]*\b(sched_getattr|sched_setattr)\b[^\n{;]*;[ \t]*\n)}{"#if !defined(SCHED_ATTR_SIZE_VER0)\n".$1."#endif\n"}gim' -i "$f"
+  done
+fi
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SYSTEMD=ON -DUSE_BPF_PROC_IMPL=ON
 cmake --build build --target ananicy-cpp -j$(nproc)
-cmake --install build --component Runtime
+sudo cmake --install build --component Runtime
 # sway-idle-inhibit
 cd /root
 git clone https://github.com/ErikReider/SwayAudioIdleInhibit
@@ -491,6 +515,6 @@ systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service
 
 # Cleaning post setup
-apt remove --purge -y libxcb-xkb-dev libc6-dev libpam0g-dev build-essential cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev libpam0g-dev pkg-config meson
+apt remove --purge -y libxcb-xkb-dev libc6-dev libpam0g-dev build-essential cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev libpam0g-dev pkg-config meson libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev
 apt autoremove --purge -y
 apt clean
