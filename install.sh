@@ -318,9 +318,6 @@ cp -r "$THEME_SRC/icons/Gruvbox-Material-Dark" "$THEME_DEST/icons"
 mkdir -p /etc/firefox/policies
 ln -sf "/home/$username/Documents/personal/default/dotfiles/policies.json" /etc/firefox/policies/policies.json
 
-# Delete variables
-shred -u /root/install.conf
-
 # zram config
 # Get total memory in MiB
 TOTAL_MEM=$(awk '/MemTotal/ {print int($2 / 1024)}' /proc/meminfo)
