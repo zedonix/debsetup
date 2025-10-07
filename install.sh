@@ -283,7 +283,7 @@ rm -rf /opt/zig
 rm -f /usr/local/bin/zig
 # sway-idle-inhibit
 cd /root
-git clone https://github.com/ErikReider/SwayAudioIdleInhibit
+git clone https://github.com/ErikReider/SwayAudioIdleInhibit.git
 cd SwayAudioIdleInhibit
 meson setup build -Dlogind-provider=systemd
 meson compile -C build
