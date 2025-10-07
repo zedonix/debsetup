@@ -393,19 +393,30 @@ if [ ! -z "$FILES" ]; then
     if grep -q "SCHED_ATTR_SIZE_VER0" "$f"; then
       continue
     fi
-    cp -- "$f" "$f.bak"
+    cp "$f" "$f.bak"
+    # Wrap struct sched_attr definition
     awk '
-    BEGIN { in=0; braces=0; }
-    /^\s*struct\s+sched_attr\b/ { print "#if !defined(SCHED_ATTR_SIZE_VER0)"; in=1; open=gsub(/\{/, "{"); close=gsub(/\}/, "}"); braces += open-close; print; next }
-    {
-      if (in) {
-        open=gsub(/\{/, "{"); close=gsub(/\}/, "}"); braces += open-close;
-        print;
-        if (braces<=0 && /\};/) { print "#endif /* !SCHED_ATTR_SIZE_VER0 */"; in=0; braces=0 }
-      } else { print }
-    }
-    END { if (in) print "#endif /* !SCHED_ATTR_SIZE_VER0 (fallback) */" }' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
-    perl -0777 -pe 's{(^[ \t]*(?:extern[ \t]+)?[^\n{;]*\b(sched_getattr|sched_setattr)\b[^\n{;]*;[ \t]*\n)}{"#if !defined(SCHED_ATTR_SIZE_VER0)\n".$1."#endif\n"}gim' -i "$f"
+      BEGIN { inside=0; braces=0 }
+      /struct[ \t]+sched_attr/ {
+        print "#if !defined(SCHED_ATTR_SIZE_VER0)"
+        inside=1
+      }
+      {
+        if (inside) {
+          braces += gsub(/\{/, "{")
+          braces -= gsub(/\}/, "}")
+          print
+          if (braces == 0 && /\};/) {
+            print "#endif /* !SCHED_ATTR_SIZE_VER0 */"
+            inside=0
+          }
+        } else {
+          print
+        }
+      }
+    ' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+    # Wrap prototypes sched_getattr / sched_setattr
+    perl -0777 -pe 's/(^[ \t]*(?:extern[ \t]+)?[^\n{;]*(sched_getattr|sched_setattr)[^\n{;]*;[ \t]*\n)/#if !defined(SCHED_ATTR_SIZE_VER0)\n$1#endif\n/gim' -i "$f"
   done
 fi
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SYSTEMD=ON -DUSE_BPF_PROC_IMPL=ON
