@@ -287,9 +287,30 @@ rm -f /usr/local/bin/zig
 # ananicy-cpp
 git clone https://gitlab.com/ananicy-cpp/ananicy-cpp.git
 cd ananicy-cpp
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --target ananicy-cpp
-cmake --install build --component Runtime
+cat >>CMakeLists.txt <<'EOF'
+include(InstallRequiredSystemLibraries)
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGE_NAME "ananicy-cpp")
+set(CPACK_PACKAGE_CONTACT "Piyush <you@example.com>")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_DEBIAN_COMPONENT_INSTALL ON)
+include(CPack)
+EOF
+mkdir -p build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+  -DUSE_BPF_PROC_IMPL=ON -DWITH_BPF=ON \
+  -DCPACK_GENERATOR=DEB \
+  -DCPACK_PACKAGE_NAME="ananicy-cpp" \
+  -DCPACK_PACKAGE_CONTACT="Piyush <you@example.com>" \
+  -DCPACK_PACKAGE_DESCRIPTION="Ananicy C++ automatic process priority manager" \
+  -DCPACK_PACKAGE_VENDOR="https://gitlab.com/ananicy-cpp/ananicy-cpp" \
+  -DCPACK_PACKAGE_VERSION="1.0.0" \
+  -DCPACK_DEBIAN_COMPONENT_INSTALL=ON \
+  -DCPACK_DEBIAN_PACKAGE_DEPENDS="libc6 (>= 2.34), libsystemd0, libspdlog-dev, libfmt-dev, nlohmann-json3-dev"
+cmake --build . --target ananicy-cpp
+cpack -G DEB
+apt install ./ananicy-cpp-*.deb
 
 # Root .config
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
@@ -320,15 +341,15 @@ THEME_DEST="/usr/share"
 cp -r "$THEME_SRC/themes/Gruvbox-Material-Dark" "$THEME_DEST/themes"
 cp -r "$THEME_SRC/icons/Gruvbox-Material-Dark" "$THEME_DEST/icons"
 
-  # Anancy-cpp rules
-  git clone --depth=1 https://github.com/RogueScholar/ananicy.git
-  git clone --depth=1 https://github.com/CachyOS/ananicy-rules.git
-  mkdir -p /etc/ananicy.d/roguescholar /etc/ananicy.d/zz-cachyos
-  cp -r ananicy/ananicy.d/* /etc/ananicy.d/roguescholar/
-  cp -r ananicy-rules/00-default/* /etc/ananicy.d/zz-cachyos/
-  cp -r ananicy-rules/00-types.types /etc/ananicy.d/zz-cachyos/
-  cp -r ananicy-rules/00-cgroups.cgroups /etc/ananicy.d/zz-cachyos/
-  tee /etc/ananicy.d/ananicy.conf >/dev/null <<'EOF'
+# Anancy-cpp rules
+git clone --depth=1 https://github.com/RogueScholar/ananicy.git
+git clone --depth=1 https://github.com/CachyOS/ananicy-rules.git
+mkdir -p /etc/ananicy.d/roguescholar /etc/ananicy.d/zz-cachyos
+cp -r ananicy/ananicy.d/* /etc/ananicy.d/roguescholar/
+cp -r ananicy-rules/00-default/* /etc/ananicy.d/zz-cachyos/
+cp -r ananicy-rules/00-types.types /etc/ananicy.d/zz-cachyos/
+cp -r ananicy-rules/00-cgroups.cgroups /etc/ananicy.d/zz-cachyos/
+tee /etc/ananicy.d/ananicy.conf >/dev/null <<'EOF'
 check_freq = 15
 cgroup_load = false
 type_load = true
