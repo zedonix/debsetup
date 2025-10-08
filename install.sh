@@ -393,6 +393,6 @@ systemctl disable NetworkManager-wait-online.service getty@tty2.service
 # done
 
 # Cleaning post setup
-apt remove --purge -y libspdlog-dev nlohmann-json3-dev libfmt-dev libpipewire-0.3-dev libxcb-xkb-dev libc6-dev libpam0g-dev build-essential cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev pkg-config libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev
+apt remove --purge -y cpupower-gui libspdlog-dev nlohmann-json3-dev libfmt-dev libpipewire-0.3-dev libxcb-xkb-dev libc6-dev libpam0g-dev build-essential cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev pkg-config libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev
 apt autoremove --purge -y
 apt clean
