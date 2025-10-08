@@ -259,6 +259,12 @@ su - "$username" -c '
   mv bemoji/bemoji ~/.local/bin
   rm -rf bemoji
 
+  export XDG_DATA_HOME="$HOME/.local/share"
+  export XDG_CACHE_HOME="$HOME/.cache"
+  export CARGO_HOME="$XDG_DATA_HOME"/cargo
+  export CARGO_TARGET_DIR="$XDG_CACHE_HOME/cargo-target"
+  export RUSTUP_HOME="$XDG_DATA_HOME/rustup"
+  export GOPATH="$XDG_DATA_HOME"/go
   go install github.com/savedra1/clipse@v1.1.0
   rustup default stable
   rustup update
@@ -287,7 +293,7 @@ rm -f /usr/local/bin/zig
 # ananicy-cpp
 git clone https://gitlab.com/ananicy-cpp/ananicy-cpp.git
 cd ananicy-cpp
-cmake -S . -B build  -DCMAKE_BUILD_TYPE=Release -DENABLE_SYSTEMD=ON -DUSE_BPF_PROC_IMPL=ON -DWITH_BPF=ON
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SYSTEMD=ON -DUSE_BPF_PROC_IMPL=ON -DWITH_BPF=ON
 cmake --build build --target ananicy-cpp
 cmake --install build --component Runtime
 
