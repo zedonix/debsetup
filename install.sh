@@ -328,7 +328,7 @@ mkdir -p /etc/systemd/zram-generator.conf.d
 {
   echo "[zram0]"
   echo "zram-size = ${ZRAM_SIZE}"
-  echo "compression-algorithm = zstd #lzo-rle"
+  echo "compression-algorithm = zstd"
   echo "swap-priority = 100"
   echo "fs-type = swap"
 } >/etc/systemd/zram-generator.conf.d/00-zram.conf
