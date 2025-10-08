@@ -266,6 +266,12 @@ su - "$username" -c '
 '
 corepack enable
 corepack prepare pnpm@latest --activate
+# ananicy-cpp
+git clone https://gitlab.com/ananicy-cpp/ananicy-cpp.git
+cd ananicy-cpp
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+cmake --install build
 # Newsraft
 cd /root
 git clone https://codeberg.org/newsraft/newsraft.git
@@ -345,7 +351,7 @@ fi
 if [[ "$extra" == "laptop" ]]; then
   systemctl enable tlp
 fi
-systemctl enable ly nohang-desktop.service apparmor
+systemctl enable ly nohang-desktop.service apparmor ananicy-cpp
 systemctl enable NetworkManager NetworkManager-dispatcher
 systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service getty@tty2.service
@@ -357,6 +363,6 @@ for profile in firefox flatpak loupe signal-desktop steam; do
 done
 
 # Cleaning post setup
-apt remove --purge -y libpipewire-0.3-dev libxcb-xkb-dev libc6-dev libpam0g-dev build-essential cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev libpam0g-dev pkg-config meson libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev
+apt remove --purge -y libspdlog-dev nlohmann-json3-dev libfmt-dev libpipewire-0.3-dev libxcb-xkb-dev libc6-dev libpam0g-dev build-essential cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev pkg-config libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev
 apt autoremove --purge -y
 apt clean
