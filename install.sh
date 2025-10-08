@@ -269,9 +269,9 @@ corepack prepare pnpm@latest --activate
 # ananicy-cpp
 git clone https://gitlab.com/ananicy-cpp/ananicy-cpp.git
 cd ananicy-cpp
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B -DCMAKE_BUILD_TYPE=Release
 cmake --build build
-cmake --install build
+cmake --install build --component Runtime
 # Newsraft
 cd /root
 git clone https://codeberg.org/newsraft/newsraft.git
