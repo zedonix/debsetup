@@ -284,6 +284,12 @@ zig build -Dinit_system=systemd -Denable_x11_support=false --verbose
 zig build installexe -Dinit_system=systemd
 rm -rf /opt/zig
 rm -f /usr/local/bin/zig
+# ananicy-cpp
+git clone https://gitlab.com/ananicy-cpp/ananicy-cpp.git
+cd ananicy-cpp
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target ananicy-cpp
+cmake --install build --component Runtime
 
 # Root .config
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
@@ -345,16 +351,16 @@ fi
 if [[ "$extra" == "laptop" ]]; then
   systemctl enable tlp
 fi
-systemctl enable ly nohang-desktop.service apparmor
+systemctl enable ly nohang-desktop.service ananicy-cpp
 systemctl enable NetworkManager NetworkManager-dispatcher
 systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service getty@tty2.service
 
 # Apparmor
-for profile in firefox flatpak loupe signal-desktop steam; do
-  sudo apparmor_parser -r /etc/apparmor.d/$profile
-  sudo aa-enforce $profile
-done
+# for profile in firefox flatpak loupe signal-desktop steam; do
+#   sudo apparmor_parser -r /etc/apparmor.d/$profile
+#   sudo aa-enforce $profile
+# done
 
 # Cleaning post setup
 apt remove --purge -y libspdlog-dev nlohmann-json3-dev libfmt-dev libpipewire-0.3-dev libxcb-xkb-dev libc6-dev libpam0g-dev build-essential cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev pkg-config libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev
