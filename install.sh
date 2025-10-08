@@ -204,7 +204,7 @@ echo "editor no" >>/boot/efi/loader/loader.conf
 echo "%wheel ALL=(ALL) ALL" >/etc/sudoers.d/wheel
 echo "Defaults timestamp_timeout=-1" >/etc/sudoers.d/timestamp
 echo "Defaults pwfeedback" >/etc/sudoers.d/pwfeedback
-echo "XDG_RUNTIME_DIR WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS WAYLAND_SOCKET" >/etc/sudoers.d/wayland
+echo 'Defaults env_keep += "XDG_RUNTIME_DIR WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS WAYLAND_SOCKET"' >/etc/sudoers.d/wayland
 chmod 440 /etc/sudoers.d/*
 if [[ "$hardware" == "hardware" ]]; then
   usermod -aG docker,libvirt,kvm,lpadmin piyush
@@ -351,9 +351,9 @@ systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service getty@tty2.service
 
 # Apparmor
-for profile in discord firefox flatpak loupe signal-desktop steam; do
-    sudo apparmor_parser -r /etc/apparmor.d/$profile
-    sudo aa-enforce $profile
+for profile in firefox flatpak loupe signal-desktop steam; do
+  sudo apparmor_parser -r /etc/apparmor.d/$profile
+  sudo aa-enforce $profile
 done
 
 # Cleaning post setup
