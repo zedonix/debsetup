@@ -345,7 +345,7 @@ fi
 if [[ "$extra" == "laptop" ]]; then
   systemctl enable tlp
 fi
-systemctl enable sshd ly nohang-desktop.service apparmor
+systemctl enable ly nohang-desktop.service apparmor
 systemctl enable NetworkManager NetworkManager-dispatcher
 systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service getty@tty2.service
