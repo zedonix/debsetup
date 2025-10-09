@@ -394,6 +394,6 @@ systemctl disable NetworkManager-wait-online.service getty@tty2.service
 # done
 
 # Cleaning post setup
-apt remove --purge -y console-setup-linux console-setup ninja-build gettext cpupower-gui dracut-install vim-common vim-tiny x11-common x11-common-utils x11-common-xkb-utils x11-common-xserver-utils xauth libspdlog-dev nlohmann-json3-dev libfmt-dev libpipewire-0.3-dev libxcb-xkb-dev libc6-dev libpam0g-dev build-essential cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev pkg-config libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev
+apt remove --purge -y ccache console-setup-linux console-setup ninja-build gettext cpupower-gui dracut-install vim-common vim-tiny x11-common x11-common-utils x11-common-xkb-utils x11-common-xserver-utils xauth libspdlog-dev nlohmann-json3-dev libfmt-dev libpipewire-0.3-dev libxcb-xkb-dev libc6-dev libpam0g-dev build-essential cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev pkg-config libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev
 apt autoremove --purge -y
 apt clean
