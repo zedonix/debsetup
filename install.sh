@@ -241,7 +241,7 @@ su - "$username" -c '
   for link in ~/Documents/personal/default/scripts/bin/*; do
     ln -sf "$link" ~/.local/bin/
   done
-  git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
+  # git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
   zoxide add /home/piyush/Documents/personal/default/debsetup
 
   # Iosevka
@@ -297,6 +297,13 @@ cd ananicy-cpp
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SYSTEMD=ON -DUSE_BPF_PROC_IMPL=ON -DWITH_BPF=ON
 cmake --build build --target ananicy-cpp
 cmake --install build --component Runtime
+# neovim
+git clone --depth 1 --branch stable https://github.com/neovim/neovim.git
+cd neovim
+make CMAKE_BUILD_TYPE=RelWithDebInfo
+cd build
+cpack -G DEB
+dpkg -i ./*.deb
 
 # Root .config
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
