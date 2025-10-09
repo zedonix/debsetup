@@ -241,7 +241,7 @@ su - "$username" -c '
   for link in ~/Documents/personal/default/scripts/bin/*; do
     ln -sf "$link" ~/.local/bin/
   done
-  # git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
+  git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
   zoxide add /home/piyush/Documents/personal/default/debsetup
 
   # Iosevka
