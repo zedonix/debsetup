@@ -250,6 +250,7 @@ su - "$username" -c '
   done
   git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
   zoxide add /home/piyush/Documents/personal/default/debsetup
+  source ~/.bashrc
 
   # Iosevka
   cd ~/Downloads/
@@ -267,19 +268,25 @@ su - "$username" -c '
   mv bemoji/bemoji ~/.local/bin
   rm -rf bemoji
 
-  export XDG_DATA_HOME="$HOME/.local/share"
-  export XDG_CACHE_HOME="$HOME/.cache"
-  export CARGO_HOME="$XDG_DATA_HOME"/cargo
-  export CARGO_TARGET_DIR="$XDG_CACHE_HOME/cargo-target"
-  export RUSTUP_HOME="$XDG_DATA_HOME/rustup"
-  export GOPATH="$XDG_DATA_HOME"/go
   go install github.com/savedra1/clipse@v1.1.0
   rustup default stable
   rustup update
   cargo install wayland-pipewire-idle-inhibit
 '
+# Root .config
+mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
+echo '[[ -f ~/.bashrc ]] && . ~/.bashrc' >~/.bash_profile
+touch ~/.local/state/zsh/history ~/.local/state/bash/history
+ln -sf /home/$username/Documents/personal/default/dotfiles/.bashrc ~/.bashrc
+ln -sf /home/$username/Documents/personal/default/dotfiles/.zshrc ~/.zshrc
+ln -sf /home/$username/Documents/personal/default/dotfiles/.config/starship.toml ~/.config
+ln -sf /home/$username/Documents/personal/default/dotfiles/.config/nvim/ ~/.config
+source ~/.bashrc
+
 corepack enable
 corepack prepare pnpm@latest --activate
+npm install -g tree-sitter-cli
+
 # Newsraft
 cd /root
 git clone https://codeberg.org/newsraft/newsraft.git
@@ -311,15 +318,6 @@ make CMAKE_BUILD_TYPE=RelWithDebInfo
 cd build
 cpack -G DEB
 dpkg -i ./*.deb
-
-# Root .config
-mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
-echo '[[ -f ~/.bashrc ]] && . ~/.bashrc' >~/.bash_profile
-touch ~/.local/state/zsh/history ~/.local/state/bash/history
-ln -sf /home/$username/Documents/personal/default/dotfiles/.bashrc ~/.bashrc
-ln -sf /home/$username/Documents/personal/default/dotfiles/.zshrc ~/.zshrc
-ln -sf /home/$username/Documents/personal/default/dotfiles/.config/starship.toml ~/.config
-ln -sf /home/$username/Documents/personal/default/dotfiles/.config/nvim/ ~/.config
 
 # ly config
 # -e 's/^bigclock *= *.*/bigclock = en/' \
