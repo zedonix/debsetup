@@ -199,6 +199,13 @@ fi
 # Boot Manager setup
 echo "timeout 3" >>/boot/efi/loader/loader.conf
 echo "editor no" >>/boot/efi/loader/loader.conf
+if [ -n "$pstate_param" ]; then
+  for f in /boot/loader/entries/*; do
+    [ -f "$f" ] || continue
+    sed -n 's/^options[[:space:]]\+//p' "$f" | grep -Fq "$pstate_param" && continue
+    sed -i "/^options[[:space:]]\+/ s/$/ $pstate_param/" "$f"
+  done
+fi
 
 # Sudo Configuration
 echo "%wheel ALL=(ALL) ALL" >/etc/sudoers.d/wheel
@@ -322,7 +329,7 @@ sed -i \
   -e 's/^clock *= *.*/clock = %a %d\/%m %H:%M/' \
   /etc/ly/config.ini
 
-# Setup Gruvbox theme
+# Setup gruvbox theme
 THEME_SRC="/home/$username/Documents/personal/default/GruvboxQT"
 THEME_DEST="/usr/share/Kvantum/Gruvbox"
 mkdir -p "$THEME_DEST"
@@ -376,6 +383,19 @@ mkdir -p /etc/systemd/zram-generator.conf.d
   echo "swap-priority = 100"
   echo "fs-type = swap"
 } >/etc/systemd/zram-generator.conf.d/00-zram.conf
+
+# nohang-desktop notifier
+tee /usr/local/bin/nohang-after-kill.sh <<'EOF'
+#!/usr/bin/env bash
+logger -t nohang "killed $1 pid=$2 uid=$3"
+if [ -e /run/user/"$3"/bus ]; then
+  sudo -u "#$3" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$3/bus" \
+    notify-send "nohang: killed $1" "pid $2"
+fi
+EOF
+chown root:root /usr/local/bin/nohang-after-kill.sh
+chmod 755 /usr/local/bin/nohang-after-kill.sh
+sed -i.bak 's|^post_kill_exe.*$|post_kill_exe = /usr/local/bin/nohang-after-kill.sh $NAME $PID $UID|' /etc/nohang/nohang-desktop.conf
 
 # Services
 # rfkill unblock bluetooth
