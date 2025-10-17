@@ -63,7 +63,7 @@ NEW="$HOME/Documents/libvirt"
 TMP="/tmp/default-pool.xml"
 VIRSH="virsh --connect qemu:///system"
 
-if pacman -Q libvirt; then
+if dpkg -s libvirt-daemon &>/dev/null; then
   sudo systemctl start libvirtd.service || true
   sudo virsh net-autostart default || true
   sudo virsh net-start default || true
