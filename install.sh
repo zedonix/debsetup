@@ -218,6 +218,9 @@ if [[ "$hardware" == "hardware" ]]; then
 fi
 usermod -aG sudo,adm,cdrom,plugdev,video,audio,input,netdev piyush
 
+# Nix install
+sh <(curl -L https://nixos.org/nix/install) --daemon
+
 # Copy config and dotfiles as the user
 su - "$username" -c '
   mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
@@ -272,6 +275,7 @@ su - "$username" -c '
   rustup default stable
   rustup update
   cargo install wayland-pipewire-idle-inhibit
+  nix profile add nixpkgs#hyprpicker
 '
 # Root .config
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
