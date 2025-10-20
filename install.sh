@@ -276,6 +276,7 @@ su - "$username" -c '
   rustup update
   cargo install wayland-pipewire-idle-inhibit
   nix profile add nixpkgs#hyprpicker
+  nix profile add nixpkgs#networkmanager_dmenu
 '
 # Root .config
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
