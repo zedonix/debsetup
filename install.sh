@@ -228,7 +228,9 @@ su - "$username" -c '
   mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
   mkdir -p ~/Documents/personal/default ~/Documents/projects/work ~/Documents/projects/sandbox ~/Documents/personal/wiki
   mkdir -p ~/.local/bin ~/.cache/cargo-target ~/.local/state/bash ~/.local/state/zsh ~/.local/share/wineprefixes
-  touch ~/.local/state/bash/history ~/.local/state/zsh/history ~/Documents/personal/wiki/index.txt
+  touch ~/.local/state/bash/history ~/.local/state/zsh/history
+  echo "todo.txt" > ~/Documents/personal/wiki/index.txt
+  echo "1. Write some todos" > ~/Documents/personal/wiki/todo.txt
 
   git clone https://github.com/zedonix/scripts.git ~/Documents/personal/default/scripts
   git clone https://github.com/zedonix/dotfiles.git ~/Documents/personal/default/dotfiles
