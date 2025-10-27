@@ -24,7 +24,7 @@ done
 # Firefox user.js linking
 echo "/home/$USER/Documents/personal/default/dotfiles/ublock.txt" | wl-copy
 gh auth login
-dir=$(echo ~/.mozilla/firefox/*.default-release)
+dir=$(echo ~/.mozilla/firefox/*.default-esr)
 ln -sf ~/Documents/personal/default/dotfiles/user.js "$dir/user.js"
 cp -f ~/Documents/personal/default/dotfiles/book* "$dir/bookmarkbackups/"
 
