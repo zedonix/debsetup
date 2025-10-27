@@ -287,6 +287,11 @@ fi
 # A anacron job
 echo "30 5 trash-empty-job su - piyush -c '$(which trash-empty)'" >>/etc/anacrontab
 
+# Flatpak setup
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak install -y org.gtk.Gtk3theme.Adwaita-dark
+flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
+
 # Copy config and dotfiles as the user
 su - "$username" -c '
   mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
@@ -323,11 +328,7 @@ su - "$username" -c '
   zoxide add /home/piyush/Documents/personal/default/debsetup
   source ~/.bashrc
 
-  # Flatpak setup
-  flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-  flatpak install -y org.gtk.Gtk3theme.Adwaita-dark
-  flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
-  flatpak install flathub org.onlyoffice.desktopeditors
+  flatpak install -y org.onlyoffice.desktopeditors
   # flatpak install -y flathub org.gimp.GIMP
   # flatpak install -y flathub io.gitlab.theevilskeleton.Upscaler
   # flatpak install -y flathub com.github.wwmm.easyeffects
