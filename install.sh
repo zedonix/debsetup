@@ -487,7 +487,7 @@ sed -i.bak 's|^post_kill_exe.*$|post_kill_exe = /usr/local/bin/nohang-after-kill
 # rfkill unblock bluetooth
 # modprobe btusb || true
 if [[ "$hardware" == "hardware" ]]; then
-  systemctl enable fstrim.timer acpid libvirtd.socket cups ipp-usb docker.socket ufw
+  systemctl enable fstrim.timer acpid libvirtd.socket cups ipp-usb docker.socket
 fi
 if [[ "$extra" == "laptop" || "$extra" == "bluetooth" ]]; then
   systemctl enable bluetooth
@@ -496,7 +496,7 @@ if [[ "$extra" == "laptop" ]]; then
   systemctl enable tlp
 fi
 systemctl enable ly nohang-desktop.service ananicy-cpp
-systemctl enable NetworkManager NetworkManager-dispatcher
+systemctl enable NetworkManager NetworkManager-dispatcher ufw
 systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service getty@tty2.service
 
