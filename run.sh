@@ -22,7 +22,7 @@ for key in "${!gsettings_keys[@]}"; do
 done
 
 # Firefox user.js linking
-echo "/home/$USER/Documents/personal/default/dotfiles/ublock.txt" | wl-copy
+echo -n "/home/$USER/Documents/personal/default/dotfiles/ublock.txt" | wl-copy
 gh auth login
 dir=$(echo ~/.mozilla/firefox/*.default-esr)
 ln -sf ~/Documents/personal/default/dotfiles/user.js "$dir/user.js"
