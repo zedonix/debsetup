@@ -56,11 +56,11 @@ if [[ "$hardware" == "hardware" ]]; then
 fi
 
 # Package installation apt
-sh <(curl -L https://nixos.org/nix/install) --daemon --yes
 wget -O- https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/trusted.gpg.d/adoptium.asc
 echo "deb https://packages.adoptium.net/artifactory/deb trixie main" >/etc/apt/sources.list.d/adoptium.list
 apt update
 xargs -a pkglist.txt apt install -y
+sh <(curl -L https://nixos.org/nix/install) --daemon --yes
 
 # Tlp setup
 # Robust detection: prefer explicit pstate driver dirs if present, fallback to scaling_driver text
