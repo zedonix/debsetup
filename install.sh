@@ -223,6 +223,72 @@ usermod -aG sudo,adm,cdrom,plugdev,video,audio,input,netdev piyush
 # Nix install
 NIX_INSTALLER_NO_PROMPT=1 sh <(curl -L https://nixos.org/nix/install) --daemon
 
+# UFW setup
+ufw limit 22/tcp              # ssh
+ufw allow 80/tcp              # http
+ufw allow 443/tcp             # https
+ufw allow from 192.168.0.0/24 #lan
+ufw deny 631/tcp              # cups stuff
+ufw allow in on virbr0 to any port 67 proto udp
+ufw allow out on virbr0 to any port 68 proto udp
+ufw allow in on virbr0 to any port 53
+ufw allow out on virbr0 to any port 53
+ufw default allow routed
+ufw default deny incoming
+ufw default allow outgoing
+ufw enable
+ufw logging on
+
+# Libvirt setup
+NEW="$HOME/Documents/libvirt"
+TMP="/tmp/default-pool.xml"
+VIRSH="virsh --connect qemu:///system"
+
+if dpkg -s libvirt-daemon &>/dev/null; then
+  systemctl start libvirtd.service || true
+  virsh net-autostart default || true
+  virsh net-start default || true
+
+  mkdir -p "$NEW"
+  chown -R root:libvirt "$NEW"
+  chmod -R 2775 "$NEW"
+
+  for p in $($VIRSH pool-list --all --name); do
+    [ -z "$p" ] && continue
+    if $VIRSH pool-dumpxml "$p" | grep -q "<path>${NEW}</path>"; then
+      [ "$p" != "default" ] && $VIRSH pool-destroy "$p" || true
+      [ "$p" != "default" ] && $VIRSH pool-undefine "$p" || true
+    fi
+  done
+
+  if $VIRSH pool-list --all | awk 'NR>2{print $1}' | grep -qx default; then
+    $VIRSH pool-destroy default || true
+    $VIRSH pool-undefine default || true
+  fi
+
+  cat >"$TMP" <<EOF
+<pool type='dir'>
+  <name>default</name>
+  <target><path>${NEW}</path></target>
+</pool>
+EOF
+
+  $VIRSH pool-define "$TMP"
+  $VIRSH pool-start default
+  $VIRSH pool-autostart default
+
+  if [ -d /var/lib/libvirt/images ] && [ "$(ls -A /var/lib/libvirt/images || true)" != "" ]; then
+    rsync -aHAX --progress /var/lib/libvirt/images/ "$NEW/"
+    chown -R root:libvirt "$NEW"
+    find "$NEW" -type d -exec chmod 2775 {} +
+    find "$NEW" -type f -exec chmod 0644 {} +
+  fi
+  $VIRSH pool-refresh default
+fi
+
+# A anacron job
+echo "30 5 trash-empty-job su - piyush -c '$(which trash-empty)'" >>/etc/anacrontab
+
 # Copy config and dotfiles as the user
 su - "$username" -c '
   mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
@@ -258,6 +324,19 @@ su - "$username" -c '
   git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
   zoxide add /home/piyush/Documents/personal/default/debsetup
   source ~/.bashrc
+
+  # Flatpak setup
+  flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+  flatpak install -y org.gtk.Gtk3theme.Adwaita-dark
+  flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
+  flatpak install flathub org.onlyoffice.desktopeditors
+  # flatpak install -y flathub org.gimp.GIMP
+  # flatpak install -y flathub io.gitlab.theevilskeleton.Upscaler
+  # flatpak install -y flathub com.github.wwmm.easyeffects
+  # flatpak install -y flathub com.github.d4nj1.tlpui
+
+  #ollama pull gemma3:1b
+  #ollama pull codellama:7b-instruct
 
   # Iosevka
   cd ~/Downloads/
@@ -408,7 +487,7 @@ sed -i.bak 's|^post_kill_exe.*$|post_kill_exe = /usr/local/bin/nohang-after-kill
 # rfkill unblock bluetooth
 # modprobe btusb || true
 if [[ "$hardware" == "hardware" ]]; then
-  systemctl enable fstrim.timer acpid libvirtd.socket cups ipp-usb docker.socket
+  systemctl enable fstrim.timer acpid libvirtd.socket cups ipp-usb docker.socket ufw
 fi
 if [[ "$extra" == "laptop" || "$extra" == "bluetooth" ]]; then
   systemctl enable bluetooth
