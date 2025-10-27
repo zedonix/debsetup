@@ -56,8 +56,9 @@ if [[ "$hardware" == "hardware" ]]; then
 fi
 
 # Package installation apt
+sh <(curl -L https://nixos.org/nix/install) --daemon --yes
 wget -O- https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/trusted.gpg.d/adoptium.asc
-echo "deb https://packages.adoptium.net/artifactory/deb bookworm main" >/etc/apt/sources.list.d/adoptium.list
+echo "deb https://packages.adoptium.net/artifactory/deb trixie main" >/etc/apt/sources.list.d/adoptium.list
 apt update
 xargs -a pkglist.txt apt install -y
 
@@ -219,9 +220,6 @@ if [[ "$hardware" == "hardware" ]]; then
   usermod -aG docker,libvirt,kvm,lpadmin piyush
 fi
 usermod -aG sudo,adm,cdrom,plugdev,video,audio,input,netdev piyush
-
-# Nix install
-NIX_INSTALLER_NO_PROMPT=1 sh <(curl -L https://nixos.org/nix/install) --daemon
 
 # UFW setup
 ufw limit 22/tcp              # ssh
