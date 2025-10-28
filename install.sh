@@ -238,14 +238,14 @@ ufw enable
 ufw logging on
 
 # Libvirt setup
-NEW="$HOME/Documents/libvirt"
+NEW="/home/$username/Documents/libvirt"
 TMP="/tmp/default-pool.xml"
 VIRSH="virsh --connect qemu:///system"
 
 if dpkg -s libvirt-daemon &>/dev/null; then
-  systemctl start libvirtd.service || true
-  virsh net-autostart default || true
-  virsh net-start default || true
+  systemctl start libvirtd.service
+  virsh net-autostart default
+  virsh net-start default
 
   mkdir -p "$NEW"
   chown -R root:libvirt "$NEW"
@@ -254,14 +254,14 @@ if dpkg -s libvirt-daemon &>/dev/null; then
   for p in $($VIRSH pool-list --all --name); do
     [ -z "$p" ] && continue
     if $VIRSH pool-dumpxml "$p" | grep -q "<path>${NEW}</path>"; then
-      [ "$p" != "default" ] && $VIRSH pool-destroy "$p" || true
-      [ "$p" != "default" ] && $VIRSH pool-undefine "$p" || true
+      [ "$p" != "default" ] && $VIRSH pool-destroy "$p"
+      [ "$p" != "default" ] && $VIRSH pool-undefine "$p"
     fi
   done
 
   if $VIRSH pool-list --all | awk 'NR>2{print $1}' | grep -qx default; then
-    $VIRSH pool-destroy default || true
-    $VIRSH pool-undefine default || true
+    $VIRSH pool-destroy default
+    $VIRSH pool-undefine default
   fi
 
   cat >"$TMP" <<EOF
