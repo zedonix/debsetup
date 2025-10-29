@@ -291,10 +291,6 @@ echo "30 5 trash-empty-job su - piyush -c '$(which trash-empty)'" >>/etc/anacron
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 flatpak install -y org.gtk.Gtk3theme.Adwaita-dark
 flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
-# flatpak install -y flathub org.gimp.GIMP
-# flatpak install -y flathub io.gitlab.theevilskeleton.Upscaler
-# flatpak install -y flathub com.github.wwmm.easyeffects
-# flatpak install -y flathub com.github.d4nj1.tlpui
 
 # Copy config and dotfiles as the user
 su - "$username" -c '
@@ -333,10 +329,10 @@ su - "$username" -c '
   source ~/.bashrc
 
   flatpak install -y org.onlyoffice.desktopeditors
+  flatpak install -y flathub com.github.wwmm.easyeffects
+  # flatpak install -y flathub com.github.d4nj1.tlpui
   # flatpak install -y flathub org.gimp.GIMP
   # flatpak install -y flathub io.gitlab.theevilskeleton.Upscaler
-  # flatpak install -y flathub com.github.wwmm.easyeffects
-  # flatpak install -y flathub com.github.d4nj1.tlpui
 
   #ollama pull gemma3:1b
   #ollama pull codellama:7b-instruct
