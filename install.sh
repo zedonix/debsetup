@@ -376,28 +376,34 @@ npm install -g tree-sitter-cli
 
 # Newsraft
 cd /root
-git clone https://codeberg.org/newsraft/newsraft.git
+tag=$(git ls-remote --tags --refs https://codeberg.org/newsraft/newsraft.git | awk -F/ '{print $NF}' | sed 's/\^{}//' | sort -V | tail -n1)
+git clone --depth 1 --branch "$tag" https://codeberg.org/newsraft/newsraft.git
 cd newsraft
 make
 make install
+
 # ly
 curl -LO https://ziglang.org/download/0.15.1/zig-x86_64-linux-0.15.1.tar.xz
 tar -xf zig-x86_64-linux-0.15.1.tar.xz
 mv zig-x86_64-linux-0.15.1 /opt/zig
 ln -sf /opt/zig/zig /usr/local/bin/zig
 cd /root
-git clone https://codeberg.org/fairyglade/ly.git
+tag=$(git ls-remote --tags --refs https://codeberg.org/fairyglade/ly.git | awk -F/ '{print $NF}' | sed 's/\^{}//' | sort -V | tail -n1)
+git clone --depth 1 --branch "$tag" https://codeberg.org/fairyglade/ly.git
 cd ly
 zig build -Dinit_system=systemd -Denable_x11_support=false --verbose
 zig build installexe -Dinit_system=systemd
 rm -rf /opt/zig
 rm -f /usr/local/bin/zig
+
 # ananicy-cpp
-git clone https://gitlab.com/ananicy-cpp/ananicy-cpp.git
+tag=$(git ls-remote --tags --refs https://gitlab.com/ananicy-cpp/ananicy-cpp.git | awk -F/ '{print $NF}' | sed 's/\^{}//' | sort -V | tail -n1)
+git clone --depth 1 --branch "$tag" https://gitlab.com/ananicy-cpp/ananicy-cpp.git
 cd ananicy-cpp
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SYSTEMD=ON -DUSE_BPF_PROC_IMPL=ON -DWITH_BPF=ON
 cmake --build build --target ananicy-cpp
 cmake --install build --component Runtime
+
 # neovim
 git clone --depth 1 --branch stable https://github.com/neovim/neovim.git
 cd neovim
