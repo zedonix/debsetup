@@ -374,6 +374,17 @@ corepack enable
 corepack prepare pnpm@latest --activate
 npm install -g tree-sitter-cli
 
+read "HELP MEEEE!!!! ENTER MEE SO THAT I CAN CONTINUE"
+read "HELP MEEEE!!!! ENTER MEE SO THAT I CAN CONTINUE"
+read "HELP MEEEE!!!! ENTER MEE SO THAT I CAN CONTINUE"
+read "HELP MEEEE!!!! ENTER MEE SO THAT I CAN CONTINUE"
+read "HELP MEEEE!!!! ENTER MEE SO THAT I CAN CONTINUE"
+read "HELP MEEEE!!!! ENTER MEE SO THAT I CAN CONTINUE"
+read "HELP MEEEE!!!! ENTER MEE SO THAT I CAN CONTINUE"
+read "HELP MEEEE!!!! ENTER MEE SO THAT I CAN CONTINUE"
+read "HELP MEEEE!!!! ENTER MEE SO THAT I CAN CONTINUE"
+read "HELP MEEEE!!!! ENTER MEE SO THAT I CAN CONTINUE"
+
 # Newsraft
 cd /root
 tag=$(git ls-remote --tags --refs https://codeberg.org/newsraft/newsraft.git | awk -F/ '{print $NF}' | sed 's/\^{}//' | sort -V | tail -n1)
