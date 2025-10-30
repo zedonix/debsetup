@@ -397,8 +397,7 @@ rm -rf /opt/zig
 rm -f /usr/local/bin/zig
 
 # ananicy-cpp
-tag=$(git ls-remote --tags --refs https://gitlab.com/ananicy-cpp/ananicy-cpp.git | awk -F/ '{print $NF}' | sed 's/\^{}//' | sort -V | tail -n1)
-git clone --depth 1 --branch "$tag" https://gitlab.com/ananicy-cpp/ananicy-cpp.git
+git clone --depth 1 https://gitlab.com/ananicy-cpp/ananicy-cpp.git
 cd ananicy-cpp
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SYSTEMD=ON -DUSE_BPF_PROC_IMPL=ON -DWITH_BPF=ON
 cmake --build build --target ananicy-cpp
