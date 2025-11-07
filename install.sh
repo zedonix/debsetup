@@ -359,6 +359,8 @@ su - "$username" -c '
   cargo install wayland-pipewire-idle-inhibit
   nix profile add nixpkgs#hyprpicker
   nix profile add nixpkgs#networkmanager_dmenu
+  docker pull iib0011/omni-tools:latest
+  docker pull bentopdf/bentopdf:latest
 '
 # Root .config
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
