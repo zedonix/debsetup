@@ -359,8 +359,8 @@ su - "$username" -c '
   cargo install wayland-pipewire-idle-inhibit
   nix profile add nixpkgs#hyprpicker
   nix profile add nixpkgs#networkmanager_dmenu
-  docker create --name omni-tools --restart unless-stopped -p 8080:80 iib0011/omni-tools:latest
-  docker create --name bentopdf --restart unless-stopped -p 3000:8080 bentopdf/bentopdf:latest
+  docker create --name omni-tools --restart unless-stopped -p 1024:80 iib0011/omni-tools:latest
+  docker create --name bentopdf --restart unless-stopped -p 1025:8080 bentopdf/bentopdf:latest
 '
 # Root .config
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
