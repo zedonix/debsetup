@@ -476,19 +476,6 @@ mkdir -p /etc/systemd/zram-generator.conf.d
   echo "fs-type = swap"
 } >/etc/systemd/zram-generator.conf.d/00-zram.conf
 
-# nohang-desktop notifier
-tee /usr/local/bin/nohang-after-kill.sh <<'EOF'
-#!/usr/bin/env bash
-logger -t nohang "killed $1 pid=$2 uid=$3"
-if [ -e /run/user/"$3"/bus ]; then
-  sudo -u "#$3" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$3/bus" \
-    notify-send "nohang: killed $1" "pid $2"
-fi
-EOF
-chown root:root /usr/local/bin/nohang-after-kill.sh
-chmod 755 /usr/local/bin/nohang-after-kill.sh
-sed -i.bak 's|^post_kill_exe.*$|post_kill_exe = /usr/local/bin/nohang-after-kill.sh $NAME $PID $UID|' /etc/nohang/nohang-desktop.conf
-
 # Services
 # rfkill unblock bluetooth
 # modprobe btusb || true
@@ -501,7 +488,7 @@ fi
 if [[ "$extra" == "laptop" ]]; then
   systemctl enable tlp
 fi
-systemctl enable ly nohang-desktop.service ananicy-cpp
+systemctl enable ly ananicy-cpp
 systemctl enable NetworkManager NetworkManager-dispatcher ufw
 systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service getty@tty2.service
