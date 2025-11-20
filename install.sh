@@ -328,6 +328,11 @@ su - "$username" -c '
   zoxide add /home/piyush/Documents/personal/default/debsetup
   source ~/.bashrc
 
+  ya pkg add dedukun/relative-motions
+  ya pkg add yazi-rs/plugins:smart-paste
+  ya pack -a bennyyip/gruvbox-dark
+  ya pkg add yazi-rs/plugins:full-border
+
   flatpak install -y org.onlyoffice.desktopeditors
   flatpak install -y flathub com.github.wwmm.easyeffects
   # flatpak install -y flathub com.github.d4nj1.tlpui
