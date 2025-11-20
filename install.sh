@@ -318,7 +318,7 @@ su - "$username" -c '
   for link in ~/Documents/personal/default/dotfiles/.config/*; do
     ln -sf "$link" ~/.config/
   done
-  for link in ~/Documents/personal/default/dotfiles/.copy/*; do
+  for link in ~/Documents/personal/default/dotfiles/copy/*; do
     cp -r "$link" ~/.config/
   done
   for link in ~/Documents/personal/default/scripts/bin/*; do
