@@ -358,12 +358,14 @@ su - "$username" -c '
   mv bemoji/bemoji ~/.local/bin
   rm -rf bemoji
 
-  go install github.com/savedra1/clipse@v1.1.0
   rustup default stable
   rustup update
   cargo install wayland-pipewire-idle-inhibit
   nix profile add nixpkgs#hyprpicker
+  nix profile add nixpkgs#yazi
   nix profile add nixpkgs#networkmanager_dmenu
+  go install github.com/savedra1/clipse@v1.1.0
+  go install github.com/jesseduffield/lazydocker@latest
   docker create --name omni-tools --restart unless-stopped -p 1024:80 iib0011/omni-tools:latest
   docker create --name bentopdf --restart unless-stopped -p 1025:8080 bentopdf/bentopdf:latest
 '
