@@ -359,6 +359,8 @@ su - "$username" -c '
   nix profile add nixpkgs#hyprpicker
   nix profile add nixpkgs#yazi
   nix profile add nixpkgs#networkmanager_dmenu
+  nix profile add nixpkgs#opencode
+  # nix build nixpkgs#opencode --no-link --no-substitute
   go install github.com/savedra1/clipse@v1.1.0
   go install github.com/jesseduffield/lazydocker@latest
   docker create --name omni-tools --restart unless-stopped -p 1024:80 iib0011/omni-tools:latest
