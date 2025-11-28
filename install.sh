@@ -363,9 +363,9 @@ su - "$username" -c '
   # nix build nixpkgs#opencode --no-link --no-substitute
   go install github.com/savedra1/clipse@v1.1.0
   go install github.com/jesseduffield/lazydocker@latest
-  docker create --name omni-tools --restart unless-stopped -p 1024:80 iib0011/omni-tools:latest
-  docker create --name bentopdf --restart unless-stopped -p 1025:8080 bentopdf/bentopdf:latest
-  docker create --name convertx --restart unless-stopped -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
+  docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
+  docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
+  docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
 '
 # Root .config
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
