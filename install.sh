@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# run as root
 set -euo pipefail
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
@@ -328,14 +329,9 @@ su - "$username" -c '
   zoxide add /home/piyush/Documents/personal/default/debsetup
   source ~/.bashrc
 
-  flatpak install -y org.onlyoffice.desktopeditors
   flatpak install -y flathub com.github.wwmm.easyeffects
   # flatpak install -y flathub com.github.d4nj1.tlpui
   # flatpak install -y flathub org.gimp.GIMP
-  # flatpak install -y flathub io.gitlab.theevilskeleton.Upscaler
-
-  #ollama pull gemma3:1b
-  #ollama pull codellama:7b-instruct
 
   # Iosevka
   cd ~/Downloads/
@@ -355,14 +351,17 @@ su - "$username" -c '
 
   rustup default stable
   rustup update
-  cargo install wayland-pipewire-idle-inhibit
+  # cargo install wayland-pipewire-idle-inhibit
   nix profile add nixpkgs#hyprpicker
   nix profile add nixpkgs#yazi
+  nix profile add nixpkgs#lazydocker
+  nix profile add nixpkgs#clipse
+  nix profile add nixpkgs#upscaler
+  nix profile add nixpkgs#onlyoffice-desktopeditors
+  nix profile add nixpkgs#wayland-pipewire-idle-inhibit
   nix profile add nixpkgs#networkmanager_dmenu
-  # nix profile add nixpkgs#opencode
+  nix profile add nixpkgs#opencode
   # nix build nixpkgs#opencode --no-link --no-substitute
-  go install github.com/savedra1/clipse@v1.1.0
-  go install github.com/jesseduffield/lazydocker@latest
   docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
   docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
   docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
