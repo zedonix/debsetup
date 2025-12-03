@@ -284,9 +284,7 @@ fi
 # A anacron job
 echo "30 5 trash-empty-job su - piyush -c '$(which trash-empty)'" >>/etc/anacrontab
 
-su - piyush -c "sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes --no-channel-add"
-nix-channel --add https://nixos.org/channels/nixpkgs-stable nixpkgs
-nix-channel --update
+sh <(curl -L https://nixos.org/nix/install) --daemon --yes
 su - piyush -c '
   mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
   mkdir -p ~/Documents/personal/default ~/Documents/projects/work ~/Documents/projects/sandbox ~/Documents/personal/wiki
@@ -339,20 +337,6 @@ su - piyush -c '
   # rustup default stable
   # rustup update
   # cargo install wayland-pipewire-idle-inhibit
-
-  nix profile add nixpkgs#hyprpicker
-  nix profile add nixpkgs#bemoji
-  nix profile add nixpkgs#yazi
-  nix profile add nixpkgs#lazydocker
-  nix profile add nixpkgs#cliphist
-  nix profile add nixpkgs#wl-clip-persist
-  nix profile add nixpkgs#upscaler
-  nix profile add nixpkgs#onlyoffice-desktopeditors
-  nix profile add nixpkgs#wayland-pipewire-idle-inhibit
-  nix profile add nixpkgs#networkmanager_dmenu
-  nix profile add nixpkgs#newsraft
-  nix profile add nixpkgs#javaPackages.compiler.temurin-bin.jre-17
-  # nix build nixpkgs#opencode --no-link --no-substitute
   # bemoji --download all
   # docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
   # docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
@@ -368,6 +352,22 @@ ln -sf /home/piyush/Documents/personal/default/dotfiles/.zshrc ~/.zshrc
 ln -sf /home/piyush/Documents/personal/default/dotfiles/.config/starship.toml ~/.config
 ln -sf /home/piyush/Documents/personal/default/dotfiles/.config/nvim/ ~/.config
 source ~/.bashrc
+
+su - piyush -c '
+  nix profile add nixpkgs#hyprpicker
+  nix profile add nixpkgs#bemoji
+  nix profile add nixpkgs#yazi
+  nix profile add nixpkgs#lazydocker
+  nix profile add nixpkgs#cliphist
+  nix profile add nixpkgs#wl-clip-persist
+  nix profile add nixpkgs#upscaler
+  nix profile add nixpkgs#onlyoffice-desktopeditors
+  nix profile add nixpkgs#wayland-pipewire-idle-inhibit
+  nix profile add nixpkgs#networkmanager_dmenu
+  nix profile add nixpkgs#newsraft
+  nix profile add nixpkgs#javaPackages.compiler.temurin-bin.jre-17
+  # nix build nixpkgs#opencode --no-link --no-substitute
+'
 
 corepack enable
 corepack prepare pnpm@latest --activate
