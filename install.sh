@@ -285,6 +285,9 @@ fi
 echo "30 5 trash-empty-job su - piyush -c '$(which trash-empty)'" >>/etc/anacrontab
 
 sh <(curl -L https://nixos.org/nix/install) --daemon --yes
+for u in $(getent passwd | awk -F: '/^nixbld[0-9]+/ {print $1}'); do
+  userdel -r "$u"
+done
 su - piyush -c '
   mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
   mkdir -p ~/Documents/personal/default ~/Documents/projects/work ~/Documents/projects/sandbox ~/Documents/personal/wiki
@@ -334,13 +337,11 @@ su - piyush -c '
   unzip IosevkaTerm.zip
   rm IosevkaTerm.zip
 
-  # rustup default stable
-  # rustup update
-  # cargo install wayland-pipewire-idle-inhibit
-  # bemoji --download all
-  # docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
-  # docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
-  # docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
+  rustup default stable
+  bemoji --download all
+  docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
+  docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
+  docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
 '
 
 # Root dots
@@ -367,6 +368,7 @@ su - piyush -c '
   nix profile add nixpkgs#networkmanager_dmenu
   nix profile add nixpkgs#newsraft
   nix profile add nixpkgs#javaPackages.compiler.temurin-bin.jre-17
+  nix profile add nixpkgs#opencode
   # nix build nixpkgs#opencode --no-link --no-substitute
 '
 
@@ -490,7 +492,7 @@ systemctl disable NetworkManager-wait-online.service getty@tty2.service
 # done
 
 # Cleaning post setup
-apt remove --purge -y ccache console-setup-linux console-setup ninja-build gettext vim-common vim-tiny libspdlog-dev nlohmann-json3-dev libfmt-dev libpipewire-0.3-dev libxcb-xkb-dev libpam0g-dev cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev pkg-config libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev x11-common xauth nano
+apt remove --purge -y ccache ninja-build gettext vim-common vim-tiny libspdlog-dev nlohmann-json3-dev libfmt-dev libpipewire-0.3-dev libxcb-xkb-dev libpam0g-dev cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev pkg-config libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev x11-common xauth nano
 apt autoremove --purge
 if [[ "$hardware" == "hardware" ]]; then
   apt remove --purge -y x11-common-utils x11-common-xkb-utils x11-common-xserver-utils
