@@ -59,7 +59,7 @@ fi
 # Package installation apt
 # apt update
 xargs -a pkglist.txt apt install -y
-sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes
+sh <(curl -L https://nixos.org/nix/install) --daemon --yes
 
 # Tlp setup
 # Robust detection: prefer explicit pstate driver dirs if present, fallback to scaling_driver text
@@ -294,13 +294,13 @@ flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adw
 systemctl enable docker
 
 # Copy config and dotfiles as the user
-su - "$username" -c '
+su - $username -c "
   mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
   mkdir -p ~/Documents/personal/default ~/Documents/projects/work ~/Documents/projects/sandbox ~/Documents/personal/wiki
   mkdir -p ~/.local/bin ~/.cache/cargo-target ~/.local/state/bash ~/.local/state/zsh ~/.local/share/wineprefixes
   touch ~/.local/state/bash/history ~/.local/state/zsh/history
-  echo "todo.txt" > ~/Documents/personal/wiki/index.txt
-  echo "1. Write some todos" > ~/Documents/personal/wiki/todo.txt
+  echo todo.txt > ~/Documents/personal/wiki/index.txt
+  echo 1. Write some todos > ~/Documents/personal/wiki/todo.txt
 
   git clone https://github.com/zedonix/scripts.git ~/Documents/personal/default/scripts
   git clone https://github.com/zedonix/dotfiles.git ~/Documents/personal/default/dotfiles
@@ -317,13 +317,13 @@ su - "$username" -c '
   ln -sf ~/Documents/personal/default/dotfiles/.XCompose ~/.XCompose
 
   for link in ~/Documents/personal/default/dotfiles/.config/*; do
-    ln -sf "$link" ~/.config/
+    ln -sf $link ~/.config/
   done
   for link in ~/Documents/personal/default/dotfiles/copy/*; do
-    cp -r "$link" ~/.config/
+    cp -r $link ~/.config/
   done
   for link in ~/Documents/personal/default/scripts/bin/*; do
-    ln -sf "$link" ~/.local/bin/
+    ln -sf $link ~/.local/bin/
   done
   git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
   zoxide add /home/piyush/Documents/personal/default/debsetup
@@ -344,26 +344,10 @@ su - "$username" -c '
   # rustup default stable
   # rustup update
   # cargo install wayland-pipewire-idle-inhibit
-  nix profile add nixpkgs#hyprpicker
-  nix profile add nixpkgs#bemoji
-  nix profile add nixpkgs#yazi
-  nix profile add nixpkgs#lazydocker
-  nix profile add nixpkgs#clipse
-  nix profile add nixpkgs#upscaler
-  nix profile add nixpkgs#onlyoffice-desktopeditors
-  nix profile add nixpkgs#wayland-pipewire-idle-inhibit
-  nix profile add nixpkgs#networkmanager_dmenu
-  nix profile add nixpkgs#newsraft
-  nix profile add nixpkgs#neovim
-  nix profile add nixpkgs#ly
-  nix profile add nixpkgs#tree-sitter
-  nix profile add nixpkgs#ananicy-cpp
-  nix profile add nixpkgs#javaPackages.compiler.temurin-bin.jre-17
-  # nix build nixpkgs#opencode --no-link --no-substitute
   docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
   docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
   docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
-'
+"
 # Root dots
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
 echo '[[ -f ~/.bashrc ]] && . ~/.bashrc' >~/.bash_profile
@@ -391,6 +375,7 @@ su - "$username" -c '
   nix profile add nixpkgs#tree-sitter
   nix profile add nixpkgs#ananicy-cpp
   nix profile add nixpkgs#javaPackages.compiler.temurin-bin.jre-17
+  # nix build nixpkgs#opencode --no-link --no-substitute
 '
 
 corepack enable
