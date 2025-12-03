@@ -58,7 +58,6 @@ fi
 # Package installation apt
 # apt update
 xargs -a pkglist.txt apt install -y
-sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes
 
 # Tlp setup
 # Robust detection: prefer explicit pstate driver dirs if present, fallback to scaling_driver text
@@ -326,34 +325,22 @@ su - piyush -c '
   zoxide add /home/piyush/Documents/personal/default/debsetup
   source ~/.bashrc
 
-  flatpak install -y flathub com.github.wwmm.easyeffects
   # flatpak install -y flathub com.github.d4nj1.tlpui
   # flatpak install -y flathub org.gimp.GIMP
 
   # Iosevka
-  # cd ~/Downloads/
-  # mkdir -p ~/.local/share/fonts/iosevka
-  # cd ~/.local/share/fonts/iosevka
-  # curl -LO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IosevkaTerm.zip
-  # unzip IosevkaTerm.zip
-  # rm IosevkaTerm.zip
+  cd ~/Downloads/
+  mkdir -p ~/.local/share/fonts/iosevka
+  cd ~/.local/share/fonts/iosevka
+  curl -LO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IosevkaTerm.zip
+  unzip IosevkaTerm.zip
+  rm IosevkaTerm.zip
 
   # rustup default stable
   # rustup update
   # cargo install wayland-pipewire-idle-inhibit
-'
 
-# Root dots
-mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
-echo '[[ -f ~/.bashrc ]] && . ~/.bashrc' >~/.bash_profile
-touch ~/.local/state/zsh/history ~/.local/state/bash/history
-ln -sf /home/piyush/Documents/personal/default/dotfiles/.bashrc ~/.bashrc
-ln -sf /home/piyush/Documents/personal/default/dotfiles/.zshrc ~/.zshrc
-ln -sf /home/piyush/Documents/personal/default/dotfiles/.config/starship.toml ~/.config
-ln -sf /home/piyush/Documents/personal/default/dotfiles/.config/nvim/ ~/.config
-source ~/.bashrc
-
-su - "piyush" -c '
+  sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes
   nix profile add nixpkgs#hyprpicker
   nix profile add nixpkgs#bemoji
   nix profile add nixpkgs#yazi
@@ -371,6 +358,16 @@ su - "piyush" -c '
   # docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
   # docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
 '
+
+# Root dots
+mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
+echo '[[ -f ~/.bashrc ]] && . ~/.bashrc' >~/.bash_profile
+touch ~/.local/state/zsh/history ~/.local/state/bash/history
+ln -sf /home/piyush/Documents/personal/default/dotfiles/.bashrc ~/.bashrc
+ln -sf /home/piyush/Documents/personal/default/dotfiles/.zshrc ~/.zshrc
+ln -sf /home/piyush/Documents/personal/default/dotfiles/.config/starship.toml ~/.config
+ln -sf /home/piyush/Documents/personal/default/dotfiles/.config/nvim/ ~/.config
+source ~/.bashrc
 
 corepack enable
 corepack prepare pnpm@latest --activate
@@ -492,7 +489,7 @@ systemctl disable NetworkManager-wait-online.service getty@tty2.service
 # done
 
 # Cleaning post setup
-apt remove --purge -y vim-common vim-tiny x11-common xauth nano
+apt remove --purge -y ccache console-setup-linux console-setup ninja-build gettext vim-common vim-tiny libspdlog-dev nlohmann-json3-dev libfmt-dev libpipewire-0.3-dev libxcb-xkb-dev libpam0g-dev cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev pkg-config libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev x11-common xauth nano
 apt autoremove --purge
 if [[ "$hardware" == "hardware" ]]; then
   apt remove --purge -y x11-common-utils x11-common-xkb-utils x11-common-xserver-utils
