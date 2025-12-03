@@ -6,7 +6,6 @@ SCRIPT_DIR=$(dirname "$(realpath "$0")")
 cd "$SCRIPT_DIR"
 
 # Variable set
-username="piyush"
 uuid=$(blkid -s UUID -o value -t TYPE=crypto_LUKS | head -n1)
 [ -n "$uuid" ] || {
   echo "no LUKS UUID found" >&2
@@ -216,9 +215,9 @@ echo "Defaults pwfeedback" >/etc/sudoers.d/pwfeedback
 echo 'Defaults env_keep += "XDG_RUNTIME_DIR WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS WAYLAND_SOCKET"' >/etc/sudoers.d/wayland
 chmod 440 /etc/sudoers.d/*
 if [[ "$hardware" == "hardware" ]]; then
-  usermod -aG docker,libvirt,kvm,lpadmin piyush
+  usermod -aG libvirt,kvm,lpadmin piyush
 fi
-usermod -aG sudo,adm,cdrom,plugdev,video,audio,input,netdev piyush
+usermod -aG sudo,adm,cdrom,plugdev,video,audio,input,netdev,docker piyush
 
 # UFW setup
 ufw limit 22/tcp              # ssh
@@ -237,7 +236,7 @@ ufw enable
 ufw logging on
 
 # Libvirt setup
-NEW="/home/$username/Documents/libvirt"
+NEW="/home/piyush/Documents/libvirt"
 TMP="/tmp/default-pool.xml"
 VIRSH="virsh --connect qemu:///system"
 
@@ -291,10 +290,8 @@ flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flat
 flatpak install -y org.gtk.Gtk3theme.Adwaita-dark
 flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
 
-systemctl start docker nix-daemon
-
 # Copy config and dotfiles as the user
-su - $username -c '
+su - piyush -c '
   mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
   mkdir -p ~/Documents/personal/default ~/Documents/projects/work ~/Documents/projects/sandbox ~/Documents/personal/wiki
   mkdir -p ~/.local/bin ~/.cache/cargo-target ~/.local/state/bash ~/.local/state/zsh ~/.local/share/wineprefixes
@@ -344,24 +341,20 @@ su - $username -c '
   # rustup default stable
   # rustup update
   # cargo install wayland-pipewire-idle-inhibit
-  bemoji --download all
-  docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
-  docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
-  docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
 '
 
 # Root dots
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
 echo '[[ -f ~/.bashrc ]] && . ~/.bashrc' >~/.bash_profile
 touch ~/.local/state/zsh/history ~/.local/state/bash/history
-ln -sf /home/$username/Documents/personal/default/dotfiles/nix.conf /etc/nix/nix.conf
-ln -sf /home/$username/Documents/personal/default/dotfiles/.bashrc ~/.bashrc
-ln -sf /home/$username/Documents/personal/default/dotfiles/.zshrc ~/.zshrc
-ln -sf /home/$username/Documents/personal/default/dotfiles/.config/starship.toml ~/.config
-ln -sf /home/$username/Documents/personal/default/dotfiles/.config/nvim/ ~/.config
+ln -sf /home/piyush/Documents/personal/default/dotfiles/nix.conf /etc/nix/nix.conf
+ln -sf /home/piyush/Documents/personal/default/dotfiles/.bashrc ~/.bashrc
+ln -sf /home/piyush/Documents/personal/default/dotfiles/.zshrc ~/.zshrc
+ln -sf /home/piyush/Documents/personal/default/dotfiles/.config/starship.toml ~/.config
+ln -sf /home/piyush/Documents/personal/default/dotfiles/.config/nvim/ ~/.config
 source ~/.bashrc
 
-su - "$username" -c '
+su - "piyush" -c '
   nix profile add nixpkgs#nerd-fonts.iosevka-term
   nix profile add nixpkgs#hyprpicker
   nix profile add nixpkgs#bemoji
@@ -379,6 +372,10 @@ su - "$username" -c '
   nix profile add nixpkgs#ananicy-cpp
   nix profile add nixpkgs#javaPackages.compiler.temurin-bin.jre-17
   # nix build nixpkgs#opencode --no-link --no-substitute
+  bemoji --download all
+  docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
+  docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
+  docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
 '
 
 corepack enable
@@ -394,13 +391,13 @@ sed -i \
   /etc/ly/config.ini
 
 # Setup gruvbox theme
-THEME_SRC="/home/$username/Documents/personal/default/GruvboxQT"
+THEME_SRC="/home/piyush/Documents/personal/default/GruvboxQT"
 THEME_DEST="/usr/share/Kvantum/Gruvbox"
 mkdir -p "$THEME_DEST"
 cp "$THEME_SRC/gruvbox-kvantum.kvconfig" "$THEME_DEST/Gruvbox.kvconfig"
 cp "$THEME_SRC/gruvbox-kvantum.svg" "$THEME_DEST/Gruvbox.svg"
 
-THEME_SRC="/home/$username/Documents/personal/default/GruvboxGtk"
+THEME_SRC="/home/piyush/Documents/personal/default/GruvboxGtk"
 THEME_DEST="/usr/share"
 cp -r "$THEME_SRC/themes/Gruvbox-Material-Dark" "$THEME_DEST/themes"
 cp -r "$THEME_SRC/icons/Gruvbox-Material-Dark" "$THEME_DEST/icons"
@@ -431,7 +428,7 @@ EOF
 
 # Firefox policy
 mkdir -p /etc/firefox/policies
-ln -sf "/home/$username/Documents/personal/default/dotfiles/policies.json" /etc/firefox/policies/policies.json
+ln -sf "/home/piyush/Documents/personal/default/dotfiles/policies.json" /etc/firefox/policies/policies.json
 
 # zram config
 # Get total memory in MiB
