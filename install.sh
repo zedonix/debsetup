@@ -361,13 +361,12 @@ su - "$username" -c '
   docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
   docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
   docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
-
-  bemoji --download all
 '
-# Root .config
+# Root dots
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
 echo '[[ -f ~/.bashrc ]] && . ~/.bashrc' >~/.bash_profile
 touch ~/.local/state/zsh/history ~/.local/state/bash/history
+ln -sf /home/$username/Documents/personal/default/dotfiles/nix.conf /etc/nix/nix.conf
 ln -sf /home/$username/Documents/personal/default/dotfiles/.bashrc ~/.bashrc
 ln -sf /home/$username/Documents/personal/default/dotfiles/.zshrc ~/.zshrc
 ln -sf /home/$username/Documents/personal/default/dotfiles/.config/starship.toml ~/.config
