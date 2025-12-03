@@ -284,12 +284,9 @@ fi
 # A anacron job
 echo "30 5 trash-empty-job su - piyush -c '$(which trash-empty)'" >>/etc/anacrontab
 
-# Flatpak setup
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak install -y org.gtk.Gtk3theme.Adwaita-dark
-flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
-
-# Copy config and dotfiles as the user
+su - piyush -c "sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes --no-channel-add"
+nix-channel --add https://nixos.org/channels/nixpkgs-stable nixpkgs
+nix-channel --update
 su - piyush -c '
   mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
   mkdir -p ~/Documents/personal/default ~/Documents/projects/work ~/Documents/projects/sandbox ~/Documents/personal/wiki
@@ -325,6 +322,9 @@ su - piyush -c '
   zoxide add /home/piyush/Documents/personal/default/debsetup
   source ~/.bashrc
 
+  flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+  flatpak install -y org.gtk.Gtk3theme.Adwaita-dark
+  flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
   # flatpak install -y flathub com.github.d4nj1.tlpui
   # flatpak install -y flathub org.gimp.GIMP
 
@@ -340,12 +340,12 @@ su - piyush -c '
   # rustup update
   # cargo install wayland-pipewire-idle-inhibit
 
-  sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes
   nix profile add nixpkgs#hyprpicker
   nix profile add nixpkgs#bemoji
   nix profile add nixpkgs#yazi
   nix profile add nixpkgs#lazydocker
-  nix profile add nixpkgs#clipse
+  nix profile add nixpkgs#cliphist
+  nix profile add nixpkgs#wl-clip-persist
   nix profile add nixpkgs#upscaler
   nix profile add nixpkgs#onlyoffice-desktopeditors
   nix profile add nixpkgs#wayland-pipewire-idle-inhibit
