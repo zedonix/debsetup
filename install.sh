@@ -294,61 +294,61 @@ flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adw
 systemctl start docker nix-daemon
 
 # Copy config and dotfiles as the user
-sudo -iu "$username" bash <<'EOF'
-mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
-mkdir -p ~/Documents/personal/default ~/Documents/projects/work ~/Documents/projects/sandbox ~/Documents/personal/wiki
-mkdir -p ~/.local/bin ~/.cache/cargo-target ~/.local/state/bash ~/.local/state/zsh ~/.local/share/wineprefixes
-touch ~/.local/state/bash/history ~/.local/state/zsh/history
-echo todo.txt > ~/Documents/personal/wiki/index.txt
-echo 1. Write some todos > ~/Documents/personal/wiki/todo.txt
+su - $username -c '
+  mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
+  mkdir -p ~/Documents/personal/default ~/Documents/projects/work ~/Documents/projects/sandbox ~/Documents/personal/wiki
+  mkdir -p ~/.local/bin ~/.cache/cargo-target ~/.local/state/bash ~/.local/state/zsh ~/.local/share/wineprefixes
+  touch ~/.local/state/bash/history ~/.local/state/zsh/history
+  echo todo.txt > ~/Documents/personal/wiki/index.txt
+  echo 1. Write some todos > ~/Documents/personal/wiki/todo.txt
 
-git clone https://github.com/zedonix/scripts.git ~/Documents/personal/default/scripts
-git clone https://github.com/zedonix/dotfiles.git ~/Documents/personal/default/dotfiles
-git clone https://github.com/zedonix/debsetup.git ~/Documents/personal/default/debsetup
-git clone https://github.com/zedonix/notes.git ~/Documents/personal/default/notes
-git clone https://github.com/zedonix/GruvboxGtk.git ~/Documents/personal/default/GruvboxGtk
-git clone https://github.com/zedonix/GruvboxQT.git ~/Documents/personal/default/GruvboxQT
+  git clone https://github.com/zedonix/scripts.git ~/Documents/personal/default/scripts
+  git clone https://github.com/zedonix/dotfiles.git ~/Documents/personal/default/dotfiles
+  git clone https://github.com/zedonix/debsetup.git ~/Documents/personal/default/debsetup
+  git clone https://github.com/zedonix/notes.git ~/Documents/personal/default/notes
+  git clone https://github.com/zedonix/GruvboxGtk.git ~/Documents/personal/default/GruvboxGtk
+  git clone https://github.com/zedonix/GruvboxQT.git ~/Documents/personal/default/GruvboxQT
 
-cp ~/Documents/personal/default/dotfiles/.config/sway/archLogo.png ~/Pictures/
-cp ~/Documents/personal/default/dotfiles/.config/sway/debLogo.png ~/Pictures/
-cp ~/Documents/personal/default/dotfiles/pics/* ~/Pictures/
-ln -sf ~/Documents/personal/default/dotfiles/.bashrc ~/.bashrc
-ln -sf ~/Documents/personal/default/dotfiles/.zshrc ~/.zshrc
-ln -sf ~/Documents/personal/default/dotfiles/.XCompose ~/.XCompose
+  cp ~/Documents/personal/default/dotfiles/.config/sway/archLogo.png ~/Pictures/
+  cp ~/Documents/personal/default/dotfiles/.config/sway/debLogo.png ~/Pictures/
+  cp ~/Documents/personal/default/dotfiles/pics/* ~/Pictures/
+  ln -sf ~/Documents/personal/default/dotfiles/.bashrc ~/.bashrc
+  ln -sf ~/Documents/personal/default/dotfiles/.zshrc ~/.zshrc
+  ln -sf ~/Documents/personal/default/dotfiles/.XCompose ~/.XCompose
 
-for link in ~/Documents/personal/default/dotfiles/.config/*; do
-  ln -sf $link ~/.config/
-done
-for link in ~/Documents/personal/default/dotfiles/copy/*; do
-  cp -r $link ~/.config/
-done
-for link in ~/Documents/personal/default/scripts/bin/*; do
-  ln -sf $link ~/.local/bin/
-done
-git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
-zoxide add /home/piyush/Documents/personal/default/debsetup
-source ~/.bashrc
+  for link in ~/Documents/personal/default/dotfiles/.config/*; do
+    ln -sf $link ~/.config/
+  done
+  for link in ~/Documents/personal/default/dotfiles/copy/*; do
+    cp -r $link ~/.config/
+  done
+  for link in ~/Documents/personal/default/scripts/bin/*; do
+    ln -sf $link ~/.local/bin/
+  done
+  git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
+  zoxide add /home/piyush/Documents/personal/default/debsetup
+  source ~/.bashrc
 
-flatpak install -y flathub com.github.wwmm.easyeffects
-# flatpak install -y flathub com.github.d4nj1.tlpui
-# flatpak install -y flathub org.gimp.GIMP
+  flatpak install -y flathub com.github.wwmm.easyeffects
+  # flatpak install -y flathub com.github.d4nj1.tlpui
+  # flatpak install -y flathub org.gimp.GIMP
 
-# Iosevka
-cd ~/Downloads/
-mkdir -p ~/.local/share/fonts/iosevka
-cd ~/.local/share/fonts/iosevka
-curl -LO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IosevkaTerm.zip
-unzip IosevkaTerm.zip
-rm IosevkaTerm.zip
+  # Iosevka
+  cd ~/Downloads/
+  mkdir -p ~/.local/share/fonts/iosevka
+  cd ~/.local/share/fonts/iosevka
+  curl -LO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IosevkaTerm.zip
+  unzip IosevkaTerm.zip
+  rm IosevkaTerm.zip
 
-# rustup default stable
-# rustup update
-# cargo install wayland-pipewire-idle-inhibit
-bemoji --download all
-docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
-docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
-docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
-EOF
+  # rustup default stable
+  # rustup update
+  # cargo install wayland-pipewire-idle-inhibit
+  bemoji --download all
+  docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
+  docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
+  docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
+'
 
 # Root dots
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
