@@ -347,6 +347,7 @@ su - piyush -c '
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
 echo '[[ -f ~/.bashrc ]] && . ~/.bashrc' >~/.bash_profile
 touch ~/.local/state/zsh/history ~/.local/state/bash/history
+ln -sf /home/piyush/Documents/personal/default/dotfiles/nix.conf /etc/nix/nix.conf
 ln -sf /home/piyush/Documents/personal/default/dotfiles/.bashrc ~/.bashrc
 ln -sf /home/piyush/Documents/personal/default/dotfiles/.zshrc ~/.zshrc
 ln -sf /home/piyush/Documents/personal/default/dotfiles/.config/starship.toml ~/.config
