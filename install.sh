@@ -334,12 +334,12 @@ su - $username -c '
   # flatpak install -y flathub org.gimp.GIMP
 
   # Iosevka
-  cd ~/Downloads/
-  mkdir -p ~/.local/share/fonts/iosevka
-  cd ~/.local/share/fonts/iosevka
-  curl -LO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IosevkaTerm.zip
-  unzip IosevkaTerm.zip
-  rm IosevkaTerm.zip
+  # cd ~/Downloads/
+  # mkdir -p ~/.local/share/fonts/iosevka
+  # cd ~/.local/share/fonts/iosevka
+  # curl -LO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IosevkaTerm.zip
+  # unzip IosevkaTerm.zip
+  # rm IosevkaTerm.zip
 
   # rustup default stable
   # rustup update
@@ -362,6 +362,7 @@ ln -sf /home/$username/Documents/personal/default/dotfiles/.config/nvim/ ~/.conf
 source ~/.bashrc
 
 su - "$username" -c '
+  nix profile add nixpkgs#nerd-fonts.iosevka-term
   nix profile add nixpkgs#hyprpicker
   nix profile add nixpkgs#bemoji
   nix profile add nixpkgs#yazi
