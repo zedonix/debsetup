@@ -58,7 +58,7 @@ fi
 # Package installation apt
 # apt update
 xargs -a pkglist.txt apt install -y
-sh <(curl -L https://nixos.org/nix/install) --daemon --yes
+sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes
 
 # Tlp setup
 # Robust detection: prefer explicit pstate driver dirs if present, fallback to scaling_driver text
@@ -347,7 +347,6 @@ su - piyush -c '
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
 echo '[[ -f ~/.bashrc ]] && . ~/.bashrc' >~/.bash_profile
 touch ~/.local/state/zsh/history ~/.local/state/bash/history
-ln -sf /home/piyush/Documents/personal/default/dotfiles/nix.conf /etc/nix/nix.conf
 ln -sf /home/piyush/Documents/personal/default/dotfiles/.bashrc ~/.bashrc
 ln -sf /home/piyush/Documents/personal/default/dotfiles/.zshrc ~/.zshrc
 ln -sf /home/piyush/Documents/personal/default/dotfiles/.config/starship.toml ~/.config
@@ -355,7 +354,6 @@ ln -sf /home/piyush/Documents/personal/default/dotfiles/.config/nvim/ ~/.config
 source ~/.bashrc
 
 su - "piyush" -c '
-  nix profile add nixpkgs#nerd-fonts.iosevka-term
   nix profile add nixpkgs#hyprpicker
   nix profile add nixpkgs#bemoji
   nix profile add nixpkgs#yazi
@@ -366,21 +364,46 @@ su - "piyush" -c '
   nix profile add nixpkgs#wayland-pipewire-idle-inhibit
   nix profile add nixpkgs#networkmanager_dmenu
   nix profile add nixpkgs#newsraft
-  nix profile add nixpkgs#neovim
-  nix profile add nixpkgs#ly
-  nix profile add nixpkgs#tree-sitter
-  nix profile add nixpkgs#ananicy-cpp
   nix profile add nixpkgs#javaPackages.compiler.temurin-bin.jre-17
   # nix build nixpkgs#opencode --no-link --no-substitute
-  bemoji --download all
-  docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
-  docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
-  docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
+  # bemoji --download all
+  # docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
+  # docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
+  # docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
 '
 
 corepack enable
 corepack prepare pnpm@latest --activate
-# npm install -g tree-sitter-cli
+npm install -g tree-sitter-cli
+
+# ly
+curl -LO https://ziglang.org/download/0.15.1/zig-x86_64-linux-0.15.1.tar.xz
+tar -xf zig-x86_64-linux-0.15.1.tar.xz
+mv zig-x86_64-linux-0.15.1 /opt/zig
+ln -sf /opt/zig/zig /usr/local/bin/zig
+cd /root
+tag=$(git ls-remote --tags --refs https://codeberg.org/fairyglade/ly.git | awk -F/ '{print $NF}' | sed 's/\^{}//' | sort -V | tail -n1)
+git clone --depth 1 --branch "$tag" https://codeberg.org/fairyglade/ly.git
+cd ly
+zig build -Dinit_system=systemd -Denable_x11_support=false --verbose
+zig build installexe -Dinit_system=systemd
+rm -rf /opt/zig
+rm -f /usr/local/bin/zig
+
+# ananicy-cpp
+git clone --depth 1 https://gitlab.com/ananicy-cpp/ananicy-cpp.git
+cd ananicy-cpp
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SYSTEMD=ON -DUSE_BPF_PROC_IMPL=ON -DWITH_BPF=ON
+cmake --build build --target ananicy-cpp
+cmake --install build --component Runtime
+
+# neovim
+git clone --depth 1 --branch stable https://github.com/neovim/neovim.git
+cd neovim
+make CMAKE_BUILD_TYPE=RelWithDebInfo
+cd build
+cpack -G DEB
+dpkg -i ./*.deb
 
 # ly config
 # -e 's/^bigclock *= *.*/bigclock = en/' \
