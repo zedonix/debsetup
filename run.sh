@@ -28,8 +28,6 @@ dir=$(echo ~/.mozilla/firefox/*.default-esr)
 ln -sf ~/Documents/personal/default/dotfiles/user.js "$dir/user.js"
 cp -f ~/Documents/personal/default/dotfiles/book* "$dir/bookmarkbackups/"
 
-bemoji --download all
-
 # Configure static IP, gateway, and custom DNS
 # sudo tee /etc/systemd/resolved.conf <<EOF
 # [Resolve]
