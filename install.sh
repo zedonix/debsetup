@@ -59,7 +59,7 @@ fi
 # Package installation apt
 # apt update
 xargs -a pkglist.txt apt install -y
-sh <(curl -L https://nixos.org/nix/install) --daemon --yes
+sh <(curl -L https://nixos.org/nix/install) --no-daemon --yes
 
 # Tlp setup
 # Robust detection: prefer explicit pstate driver dirs if present, fallback to scaling_driver text
@@ -291,6 +291,8 @@ flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flat
 flatpak install -y org.gtk.Gtk3theme.Adwaita-dark
 flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
 
+systemctl enable docker
+
 # Copy config and dotfiles as the user
 su - "$username" -c '
   mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
@@ -372,6 +374,24 @@ ln -sf /home/$username/Documents/personal/default/dotfiles/.zshrc ~/.zshrc
 ln -sf /home/$username/Documents/personal/default/dotfiles/.config/starship.toml ~/.config
 ln -sf /home/$username/Documents/personal/default/dotfiles/.config/nvim/ ~/.config
 source ~/.bashrc
+
+su - "$username" -c '
+  nix profile add nixpkgs#hyprpicker
+  nix profile add nixpkgs#bemoji
+  nix profile add nixpkgs#yazi
+  nix profile add nixpkgs#lazydocker
+  nix profile add nixpkgs#clipse
+  nix profile add nixpkgs#upscaler
+  nix profile add nixpkgs#onlyoffice-desktopeditors
+  nix profile add nixpkgs#wayland-pipewire-idle-inhibit
+  nix profile add nixpkgs#networkmanager_dmenu
+  nix profile add nixpkgs#newsraft
+  nix profile add nixpkgs#neovim
+  nix profile add nixpkgs#ly
+  nix profile add nixpkgs#tree-sitter
+  nix profile add nixpkgs#ananicy-cpp
+  nix profile add nixpkgs#javaPackages.compiler.temurin-bin.jre-17
+'
 
 corepack enable
 corepack prepare pnpm@latest --activate
