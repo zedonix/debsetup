@@ -288,6 +288,9 @@ sh <(curl -L https://nixos.org/nix/install) --daemon --yes
 for u in $(getent passwd | awk -F: '/^nixbld[0-9]+/ {print $1}'); do
   userdel -r "$u"
 done
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak install -y org.gtk.Gtk3theme.Adwaita-dark
+flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
 su - piyush -c '
   mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
   mkdir -p ~/Documents/personal/default ~/Documents/projects/work ~/Documents/projects/sandbox ~/Documents/personal/wiki
@@ -323,9 +326,6 @@ su - piyush -c '
   zoxide add /home/piyush/Documents/personal/default/debsetup
   source ~/.bashrc
 
-  flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-  flatpak install -y org.gtk.Gtk3theme.Adwaita-dark
-  flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
   # flatpak install -y flathub com.github.d4nj1.tlpui
   # flatpak install -y flathub org.gimp.GIMP
 
@@ -338,7 +338,6 @@ su - piyush -c '
   rm IosevkaTerm.zip
 
   rustup default stable
-  bemoji --download all
   docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
   docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
   docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
@@ -356,20 +355,22 @@ ln -sf /home/piyush/Documents/personal/default/dotfiles/.config/nvim/ ~/.config
 source ~/.bashrc
 
 su - piyush -c '
-  nix profile add nixpkgs#hyprpicker
-  nix profile add nixpkgs#bemoji
-  nix profile add nixpkgs#yazi
-  nix profile add nixpkgs#lazydocker
-  nix profile add nixpkgs#cliphist
-  nix profile add nixpkgs#wl-clip-persist
-  nix profile add nixpkgs#upscaler
-  nix profile add nixpkgs#onlyoffice-desktopeditors
-  nix profile add nixpkgs#wayland-pipewire-idle-inhibit
-  nix profile add nixpkgs#networkmanager_dmenu
-  nix profile add nixpkgs#newsraft
-  nix profile add nixpkgs#javaPackages.compiler.temurin-bin.jre-17
-  nix profile add nixpkgs#opencode
+  nix profile add \
+    nixpkgs#hyprpicker \
+    nixpkgs#bemoji \
+    nixpkgs#yazi \
+    nixpkgs#lazydocker \
+    nixpkgs#cliphist \
+    nixpkgs#wl-clip-persist \
+    nixpkgs#upscaler \
+    nixpkgs#onlyoffice-desktopeditors \
+    nixpkgs#wayland-pipewire-idle-inhibit \
+    nixpkgs#networkmanager_dmenu \
+    nixpkgs#newsraft \
+    nixpkgs#javaPackages.compiler.temurin-bin.jre-17 \
+    nixpkgs#opencode
   # nix build nixpkgs#opencode --no-link --no-substitute
+  bemoji --download all
 '
 
 corepack enable
