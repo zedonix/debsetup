@@ -339,8 +339,8 @@ su - "$username" -c '
   unzip IosevkaTerm.zip
   rm IosevkaTerm.zip
 
-  rustup default stable
-  rustup update
+  # rustup default stable
+  # rustup update
   # cargo install wayland-pipewire-idle-inhibit
   nix profile add nixpkgs#hyprpicker
   nix profile add nixpkgs#bemoji
