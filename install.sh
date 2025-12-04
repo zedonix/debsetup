@@ -285,9 +285,6 @@ fi
 echo "30 5 trash-empty-job su - piyush -c '$(which trash-empty)'" >>/etc/anacrontab
 
 sh <(curl -L https://nixos.org/nix/install) --daemon --yes
-for u in $(getent passwd | awk -F: '/^nixbld[0-9]+/ {print $1}'); do
-  userdel -r "$u"
-done
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 flatpak install -y org.gtk.Gtk3theme.Adwaita-dark
 flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
@@ -370,8 +367,10 @@ su - piyush -c '
     nixpkgs#javaPackages.compiler.temurin-bin.jre-17 \
     nixpkgs#opencode
   # nix build nixpkgs#opencode --no-link --no-substitute
-  bemoji --download all
 '
+for u in $(getent passwd | awk -F: '/^nixbld[0-9]+/ {print $1}'); do
+  userdel -r "$u"
+done
 
 corepack enable
 corepack prepare pnpm@latest --activate

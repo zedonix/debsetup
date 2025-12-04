@@ -45,6 +45,7 @@ cp -f ~/Documents/personal/default/dotfiles/book* "$dir/bookmarkbackups/"
 # EOF
 # sudo systemctl restart NetworkManager
 
+bemoji --download all
 # Nvim tools install
 foot -e nvim +MasonToolsInstall &
 foot -e sudo nvim +MasonToolsInstall &
