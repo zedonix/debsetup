@@ -256,6 +256,8 @@ su - piyush -c '
   git clone https://github.com/zedonix/GruvboxGtk.git ~/Documents/personal/default/GruvboxGtk
   git clone https://github.com/zedonix/GruvboxQT.git ~/Documents/personal/default/GruvboxQT
 
+  flatpak install -y flathub com.github.wwmm.easyeffects
+
   cp ~/Documents/personal/default/dotfiles/.config/sway/archLogo.png ~/Pictures/
   cp ~/Documents/personal/default/dotfiles/.config/sway/debLogo.png ~/Pictures/
   cp ~/Documents/personal/default/dotfiles/pics/* ~/Pictures/
@@ -276,10 +278,6 @@ su - piyush -c '
   zoxide add /home/piyush/Documents/personal/default/debsetup
   source ~/.bashrc
 
-  # flatpak install -y flathub com.github.d4nj1.tlpui
-  # flatpak install -y flathub org.gimp.GIMP
-  # flatpak run nl.brixit.powersupply
-
   # Iosevka
   cd ~/Downloads/
   mkdir -p ~/.local/share/fonts/iosevka
@@ -293,6 +291,15 @@ su - piyush -c '
   docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
   docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
 '
+
+if [[ "$hardware" == "hardware" ]]; then
+  flatpak install -y flathub org.gimp.GIMP
+  flatpak install -y flathub no.mifi.losslesscut
+fi
+if [[ "$extra" == "laptop" ]]; then
+  flatpak install -y flathub com.github.d4nj1.tlpui
+  flatpak install -y nl.brixit.powersupply
+fi
 
 # Root dots
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
@@ -319,8 +326,8 @@ su - piyush -c '
     nixpkgs#networkmanager_dmenu \
     nixpkgs#newsraft \
     nixpkgs#javaPackages.compiler.temurin-bin.jre-17 \
-    nixpkgs#opencode
-  # nix build nixpkgs#opencode --no-link --no-substitute
+    nix build nixpkgs#opencode --no-link --no-substitute
+    # nixpkgs#opencode
 '
 for u in $(getent passwd | awk -F: '/^nixbld[0-9]+/ {print $1}'); do
   userdel -r "$u"
