@@ -239,7 +239,7 @@ NEW="/home/piyush/Documents/libvirt"
 TMP="/tmp/default-pool.xml"
 VIRSH="virsh --connect qemu:///system"
 
-if dpkg -s libvirt-daemon &>/dev/null; then
+if false; then
   systemctl start --now libvirtd.service
   virsh net-autostart default
   virsh net-start default
