@@ -325,6 +325,7 @@ su - piyush -c '
 
   # flatpak install -y flathub com.github.d4nj1.tlpui
   # flatpak install -y flathub org.gimp.GIMP
+  # flatpak run nl.brixit.powersupply
 
   # Iosevka
   cd ~/Downloads/
