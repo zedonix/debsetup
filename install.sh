@@ -240,7 +240,7 @@ TMP="/tmp/default-pool.xml"
 VIRSH="virsh --connect qemu:///system"
 
 if dpkg -s libvirt-daemon &>/dev/null; then
-  systemctl start libvirtd.service
+  systemctl start --now libvirtd.service
   virsh net-autostart default
   virsh net-start default
 
