@@ -45,8 +45,57 @@ cp -f ~/Documents/personal/default/dotfiles/book* "$dir/bookmarkbackups/"
 # EOF
 # sudo systemctl restart NetworkManager
 
-bemoji --download all
+bemoji --download all &
 # Nvim tools install
 foot -e nvim +MasonToolsInstall &
 foot -e sudo nvim +MasonToolsInstall &
 foot -e tmux &
+
+# Libvirt setup
+NEW="/home/piyush/Documents/libvirt"
+TMP="/tmp/default-pool.xml"
+VIRSH="virsh --connect qemu:///system"
+
+if dpkg -s libvirt-daemon &>/dev/null; then
+  sudo virsh net-autostart default
+  sudo virsh net-start default
+
+  sudo mkdir -p "$NEW"
+  sudo chown -R root:libvirt "$NEW"
+  sudo chmod -R 2775 "$NEW"
+
+  for p in $(sudo "$VIRSH" pool-list --all --name); do
+    [ -z "$p" ] && continue
+    if sudo "$VIRSH" pool-dumpxml "$p" | grep -q "<path>${NEW}</path>"; then
+      if [ "$p" != "default" ]; then
+        sudo "$VIRSH" pool-destroy "$p" || true
+        sudo "$VIRSH" pool-undefine "$p" || true
+      fi
+    fi
+  done
+
+  if sudo "$VIRSH" pool-list --all | awk 'NR>2{print $1}' | grep -qx default; then
+    sudo "$VIRSH" pool-destroy default || true
+    sudo "$VIRSH" pool-undefine default || true
+  fi
+
+  cat <<'EOF' | sudo tee "$TMP" >/dev/null
+<pool type='dir'>
+  <name>default</name>
+  <target><path>${NEW}</path></target>
+</pool>
+EOF
+
+  sudo "$VIRSH" pool-define "$TMP"
+  sudo "$VIRSH" pool-start default
+  sudo "$VIRSH" pool-autostart default
+
+  if [ -d /var/lib/libvirt/images ] && [ "$(ls -A /var/lib/libvirt/images || true)" != "" ]; then
+    sudo rsync -aHAX --progress /var/lib/libvirt/images/ "$NEW/"
+    sudo chown -R root:libvirt -- "$NEW"
+    sudo find "$NEW" -type d -exec sudo chmod 2775 {} + || true
+    sudo find "$NEW" -type f -exec sudo chmod 0644 {} + || true
+  fi
+
+  sudo "$VIRSH" pool-refresh default
+fi

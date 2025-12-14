@@ -234,53 +234,6 @@ ufw default allow outgoing
 ufw enable
 ufw logging on
 
-# Libvirt setup
-NEW="/home/piyush/Documents/libvirt"
-TMP="/tmp/default-pool.xml"
-VIRSH="virsh --connect qemu:///system"
-
-if false; then
-  systemctl start --now libvirtd.service
-  virsh net-autostart default
-  virsh net-start default
-
-  mkdir -p "$NEW"
-  chown -R root:libvirt "$NEW"
-  chmod -R 2775 "$NEW"
-
-  for p in $($VIRSH pool-list --all --name); do
-    [ -z "$p" ] && continue
-    if $VIRSH pool-dumpxml "$p" | grep -q "<path>${NEW}</path>"; then
-      [ "$p" != "default" ] && $VIRSH pool-destroy "$p"
-      [ "$p" != "default" ] && $VIRSH pool-undefine "$p"
-    fi
-  done
-
-  if $VIRSH pool-list --all | awk 'NR>2{print $1}' | grep -qx default; then
-    $VIRSH pool-destroy default
-    $VIRSH pool-undefine default
-  fi
-
-  cat >"$TMP" <<EOF
-<pool type='dir'>
-  <name>default</name>
-  <target><path>${NEW}</path></target>
-</pool>
-EOF
-
-  $VIRSH pool-define "$TMP"
-  $VIRSH pool-start default
-  $VIRSH pool-autostart default
-
-  if [ -d /var/lib/libvirt/images ] && [ "$(ls -A /var/lib/libvirt/images || true)" != "" ]; then
-    rsync -aHAX --progress /var/lib/libvirt/images/ "$NEW/"
-    chown -R root:libvirt "$NEW"
-    find "$NEW" -type d -exec chmod 2775 {} +
-    find "$NEW" -type f -exec chmod 0644 {} +
-  fi
-  $VIRSH pool-refresh default
-fi
-
 # A anacron job
 echo "30 5 trash-empty-job su - piyush -c '$(which trash-empty)'" >>/etc/anacrontab
 
@@ -473,7 +426,7 @@ mkdir -p /etc/systemd/zram-generator.conf.d
 # rfkill unblock bluetooth
 # modprobe btusb || true
 if [[ "$hardware" == "hardware" ]]; then
-  systemctl enable fstrim.timer acpid libvirtd.socket cups ipp-usb docker.socket
+  systemctl enable fstrim.timer acpid libvirtd.socket cups ipp-usb docker.socket libvirtd.service
 fi
 if [[ "$extra" == "laptop" || "$extra" == "bluetooth" ]]; then
   systemctl enable bluetooth
@@ -481,7 +434,7 @@ fi
 if [[ "$extra" == "laptop" ]]; then
   systemctl enable tlp
 fi
-systemctl enable ly ananicy-cpp
+systemctl enable ly@tty2 ananicy-cpp
 systemctl enable NetworkManager NetworkManager-dispatcher ufw
 systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service getty@tty2.service
@@ -493,10 +446,6 @@ systemctl disable NetworkManager-wait-online.service getty@tty2.service
 # done
 
 # Cleaning post setup
-apt remove --purge -y ccache ninja-build gettext vim-common vim-tiny libspdlog-dev nlohmann-json3-dev libfmt-dev libpipewire-0.3-dev libxcb-xkb-dev libpam0g-dev cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev pkg-config libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev x11-common xauth nano
-apt autoremove --purge
-if [[ "$hardware" == "hardware" ]]; then
-  apt remove --purge -y x11-common-utils x11-common-xkb-utils x11-common-xserver-utils
-fi
+apt remove --purge -y ccache ninja-build gettext vim-common vim-tiny libspdlog-dev nlohmann-json3-dev libfmt-dev libpipewire-0.3-dev libxcb-xkb-dev libpam0g-dev cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev pkg-config libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev
 apt autoremove --purge -y
 apt clean
