@@ -198,12 +198,12 @@ fi
 echo "timeout 3" >>/boot/efi/loader/loader.conf
 echo "editor no" >>/boot/efi/loader/loader.conf
 if [ -n "$pstate_param" ]; then
-  for f in /boot/loader/entries/*; do
+  for f in /boot/efi/loader/entries/*; do
     sed -n 's/^options[[:space:]]\+//p' "$f" | grep -Fq "fsck.repair=yes zswap.enabled=0" && continue
-    sed -i "/^options[[:space:]]\+/ s/$/ fsck.repair=yes zswap.enabled=0" "$f"
+    sed -i "/^options[[:space:]]\+/ s/$/ fsck.repair=yes zswap.enabled=0/p" "$f"
     [ -f "$f" ] || continue
     sed -n 's/^options[[:space:]]\+//p' "$f" | grep -Fq "$pstate_param" && continue
-    sed -i "/^options[[:space:]]\+/ s/$/ $pstate_param/" "$f"
+    sed -i "/^options[[:space:]]\+/ s/$/ $pstate_param/p" "$f"
   done
 fi
 
