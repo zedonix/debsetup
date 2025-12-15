@@ -269,10 +269,7 @@ sh <(curl -L https://nixos.org/nix/install) --daemon --yes
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 flatpak install -y org.gtk.Gtk3theme.Adwaita-dark
 flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
-su - piyush -c "bash -lc '
-  hardware=hardware
-  extra=laptop
-
+su - piyush -c '
   mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
   mkdir -p ~/Documents/personal/default ~/Documents/projects/work ~/Documents/projects/sandbox ~/Documents/personal/wiki
   mkdir -p ~/.local/bin ~/.cache/cargo-target ~/.local/state/bash ~/.local/state/zsh ~/.local/share/wineprefixes
@@ -287,15 +284,10 @@ su - piyush -c "bash -lc '
   git clone https://github.com/zedonix/GruvboxGtk.git ~/Documents/personal/default/GruvboxGtk
   git clone https://github.com/zedonix/GruvboxQT.git ~/Documents/personal/default/GruvboxQT
 
-  if [[ \"$hardware\" == hardware ]]; then
-    # flatpak install -y flathub org.gimp.GIMP
-    flatpak install -y flathub no.mifi.losslesscut
-  fi
-  if [[ \"$extra\" == laptop ]]; then
-    flatpak install -y flathub com.github.d4nj1.tlpui
-    flatpak install -y nl.brixit.powersupply
-  fi
   flatpak install -y flathub com.github.wwmm.easyeffects
+  flatpak install -y flathub no.mifi.losslesscut
+  flatpak install -y flathub com.github.d4nj1.tlpui
+  flatpak install -y nl.brixit.powersupply
 
   cp ~/Documents/personal/default/dotfiles/.config/sway/archLogo.png ~/Pictures/
   cp ~/Documents/personal/default/dotfiles/.config/sway/debLogo.png ~/Pictures/
@@ -305,13 +297,13 @@ su - piyush -c "bash -lc '
   ln -sf ~/Documents/personal/default/dotfiles/.XCompose ~/.XCompose
 
   for link in ~/Documents/personal/default/dotfiles/.config/*; do
-    ln -sf \"$link\" ~/.config/
+    ln -sf $link ~/.config/
   done
   for link in ~/Documents/personal/default/dotfiles/copy/*; do
-    cp -r \"$link\" ~/.config/
+    cp -r $link ~/.config/
   done
   for link in ~/Documents/personal/default/scripts/bin/*; do
-    ln -sf \"$link\" ~/.local/bin/
+    ln -sf $link ~/.local/bin/
   done
   git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
   zoxide add /home/piyush/Documents/personal/default/debsetup
@@ -329,7 +321,7 @@ su - piyush -c "bash -lc '
   docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
   docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
   docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
-"
+'
 
 # Root dots
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
