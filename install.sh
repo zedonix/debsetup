@@ -320,10 +320,10 @@ su - piyush -c '
   docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
 '
 
-if [[ "$hardware" == "hardware" ]]; then
-  # flatpak install -y flathub org.gimp.GIMP
-  flatpak install -y flathub no.mifi.losslesscut
-fi
+# if [[ "$hardware" == "hardware" ]]; then
+#   flatpak install -y flathub org.gimp.GIMP
+#   flatpak install -y flathub no.mifi.losslesscut
+# fi
 if [[ "$extra" == "laptop" ]]; then
   flatpak install -y flathub com.github.d4nj1.tlpui
   flatpak install -y nl.brixit.powersupply
@@ -354,9 +354,9 @@ su - piyush -c '
     nixpkgs#networkmanager_dmenu \
     nixpkgs#newsraft \
     nixpkgs#javaPackages.compiler.temurin-bin.jre-17 \
-    nixpkgs#losslesscut-bin \
-    nix build nixpkgs#opencode --no-link --no-substitute
+    nixpkgs#losslesscut-bin
     # nixpkgs#opencode
+  nix build nixpkgs#opencode --no-link --no-substitute
 '
 for u in $(getent passwd | awk -F: '/^nixbld[0-9]+/ {print $1}'); do
   userdel -r "$u"
