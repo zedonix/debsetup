@@ -237,9 +237,9 @@ ufw logging on
 sed -i -E 's/^#?\s*interface=.*/interface=virbr0/; s/^#?\s*bind-interfaces.*/bind-interfaces/' /etc/dnsmasq.conf
 
 # apparmour stuff
-# aa-enforce /etc/apparmor.d/Discord
-# aa-enforce /etc/apparmor.d/steam
-# aa-enforce /etc/apparmor.d/signal-desktop
+aa-enforce /etc/apparmor.d/Discord
+aa-enforce /etc/apparmor.d/steam
+aa-enforce /etc/apparmor.d/signal-desktop
 aa-enforce /etc/apparmor.d/firefox
 aa-enforce /etc/apparmor.d/flatpak
 aa-enforce /etc/apparmor.d/loupe
