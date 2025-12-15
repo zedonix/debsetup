@@ -211,7 +211,7 @@ fi
 echo "%wheel ALL=(ALL) ALL" >/etc/sudoers.d/wheel
 echo "Defaults timestamp_timeout=-1" >/etc/sudoers.d/timestamp
 echo "Defaults pwfeedback" >/etc/sudoers.d/pwfeedback
-echo 'Defaults env_keep += "XDG_RUNTIME_DIR WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS WAYLAND_SOCKET"' >/etc/sudoers.d/wayland
+echo 'Defaults env_keep += "SYSTEMD_EDITOR XDG_RUNTIME_DIR WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS WAYLAND_SOCKET"' >/etc/sudoers.d/wayland
 chmod 440 /etc/sudoers.d/*
 if [[ "$hardware" == "hardware" ]]; then
   usermod -aG libvirt,kvm,lpadmin piyush
@@ -219,9 +219,10 @@ fi
 usermod -aG sudo,adm,cdrom,plugdev,video,audio,input,netdev,docker piyush
 
 # UFW setup
-ufw limit 22/tcp              # ssh
-ufw allow 80/tcp              # http
-ufw allow 443/tcp             # https
+# ufw limit 22/tcp              # ssh
+ufw allow from 192.168.0.0/24 to any port 22 proto tcp #ssh local
+# ufw allow 80/tcp              # http
+# ufw allow 443/tcp             # https
 ufw allow from 192.168.0.0/24 #lan
 ufw deny 631/tcp              # cups stuff
 ufw allow in on virbr0 to any port 67 proto udp
@@ -233,6 +234,15 @@ ufw default deny incoming
 ufw default allow outgoing
 ufw enable
 ufw logging on
+sed -i -E 's/^#?\s*interface=.*/interface=virbr0/; s/^#?\s*bind-interfaces.*/bind-interfaces/' /etc/dnsmasq.conf
+
+# apparmour stuff
+# aa-enforce /etc/apparmor.d/Discord
+# aa-enforce /etc/apparmor.d/steam
+# aa-enforce /etc/apparmor.d/signal-desktop
+aa-enforce /etc/apparmor.d/firefox
+aa-enforce /etc/apparmor.d/flatpak
+aa-enforce /etc/apparmor.d/loupe
 
 # A anacron job
 echo "30 5 trash-empty-job su - piyush -c '$(which trash-empty)'" >>/etc/anacrontab
@@ -326,6 +336,7 @@ su - piyush -c '
     nixpkgs#networkmanager_dmenu \
     nixpkgs#newsraft \
     nixpkgs#javaPackages.compiler.temurin-bin.jre-17 \
+    nixpkgs#losslesscut-bin \
     nix build nixpkgs#opencode --no-link --no-substitute
     # nixpkgs#opencode
 '
@@ -434,6 +445,7 @@ mkdir -p /etc/systemd/zram-generator.conf.d
 # modprobe btusb || true
 if [[ "$hardware" == "hardware" ]]; then
   systemctl enable fstrim.timer acpid libvirtd.socket cups ipp-usb docker.socket libvirtd.service
+  systemctl disable docker.service dnsmasq
 fi
 if [[ "$extra" == "laptop" || "$extra" == "bluetooth" ]]; then
   systemctl enable bluetooth
@@ -445,12 +457,6 @@ systemctl enable ly@tty2 ananicy-cpp
 systemctl enable NetworkManager NetworkManager-dispatcher ufw
 systemctl mask systemd-rfkill systemd-rfkill.socket
 systemctl disable NetworkManager-wait-online.service getty@tty2.service
-
-# Apparmor
-# for profile in firefox flatpak loupe signal-desktop steam; do
-#   sudo apparmor_parser -r /etc/apparmor.d/$profile
-#   sudo aa-enforce $profile
-# done
 
 # Cleaning post setup
 apt remove --purge -y ccache ninja-build gettext vim-common vim-tiny libspdlog-dev nlohmann-json3-dev libfmt-dev libpipewire-0.3-dev libxcb-xkb-dev libpam0g-dev cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev pkg-config libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev
