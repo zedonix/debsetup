@@ -293,7 +293,7 @@ su - piyush -c '
 '
 
 if [[ "$hardware" == "hardware" ]]; then
-  flatpak install -y flathub org.gimp.GIMP
+  # flatpak install -y flathub org.gimp.GIMP
   flatpak install -y flathub no.mifi.losslesscut
 fi
 if [[ "$extra" == "laptop" ]]; then
