@@ -244,6 +244,24 @@ aa-enforce /etc/apparmor.d/firefox
 aa-enforce /etc/apparmor.d/flatpak
 aa-enforce /etc/apparmor.d/loupe
 
+tee /etc/sysctl.d/99-hardening.conf >/dev/null <<'EOF'
+# networking
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.default.rp_filter = 1
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
+net.ipv4.ip_forward = 0
+
+# kernel hardening
+kernel.kptr_restrict = 2
+
+# file protections
+fs.protected_fifos = 2
+
+# bpf jit harden (if present)
+net.core.bpf_jit_harden = 2
+EOF
+
 # A anacron job
 echo "30 5 trash-empty-job su - piyush -c '$(which trash-empty)'" >>/etc/anacrontab
 
