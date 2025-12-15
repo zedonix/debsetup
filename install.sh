@@ -237,12 +237,12 @@ ufw logging on
 sed -i -E 's/^#?\s*interface=.*/interface=virbr0/; s/^#?\s*bind-interfaces.*/bind-interfaces/' /etc/dnsmasq.conf
 
 # apparmour stuff
-aa-enforce /etc/apparmor.d/Discord
-aa-enforce /etc/apparmor.d/steam
-aa-enforce /etc/apparmor.d/signal-desktop
-aa-enforce /etc/apparmor.d/firefox
-aa-enforce /etc/apparmor.d/flatpak
-aa-enforce /etc/apparmor.d/loupe
+# aa-enforce /etc/apparmor.d/Discord
+# aa-enforce /etc/apparmor.d/steam
+# aa-enforce /etc/apparmor.d/signal-desktop
+# aa-enforce /etc/apparmor.d/firefox
+# aa-enforce /etc/apparmor.d/flatpak
+# aa-enforce /etc/apparmor.d/loupe
 
 tee /etc/sysctl.d/99-hardening.conf >/dev/null <<'EOF'
 # networking
@@ -473,8 +473,8 @@ if [[ "$extra" == "laptop" ]]; then
 fi
 systemctl enable ly@tty2 ananicy-cpp
 systemctl enable NetworkManager NetworkManager-dispatcher ufw
-systemctl mask systemd-rfkill systemd-rfkill.socket
-systemctl disable NetworkManager-wait-online.service getty@tty2.service
+systemctl mask systemd-rfkill systemd-rfkill.socket apparmor
+systemctl disable NetworkManager-wait-online.service getty@tty2.service apparmor
 
 # Cleaning post setup
 apt remove --purge -y ccache ninja-build gettext vim-common vim-tiny libspdlog-dev nlohmann-json3-dev libfmt-dev libpipewire-0.3-dev libxcb-xkb-dev libpam0g-dev cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev pkg-config libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev nano vlc
