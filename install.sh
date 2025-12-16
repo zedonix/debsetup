@@ -332,7 +332,9 @@ ln -sf /home/piyush/Documents/personal/default/dotfiles/.bashrc ~/.bashrc
 ln -sf /home/piyush/Documents/personal/default/dotfiles/.zshrc ~/.zshrc
 ln -sf /home/piyush/Documents/personal/default/dotfiles/.config/starship.toml ~/.config
 ln -sf /home/piyush/Documents/personal/default/dotfiles/.config/nvim/ ~/.config
+
 source ~/.bashrc
+systemctl restart nix-daemon
 
 su - piyush -c '
   nix profile add \
