@@ -353,10 +353,10 @@ su - piyush -c '
     nixpkgs#newsraft \
     nixpkgs#go \
     nixpkgs#uv \
+    nixpkgs#opencode \
     nixpkgs#javaPackages.compiler.temurin-bin.jre-17
     # nixpkgs#losslesscut-bin
-    # nixpkgs#opencode
-  nix build nixpkgs#opencode --no-link --no-substitute
+  # nix build nixpkgs#opencode --no-link --no-substitute
 '
 for u in $(getent passwd | awk -F: '/^nixbld[0-9]+/ {print $1}'); do
   userdel -r "$u"
