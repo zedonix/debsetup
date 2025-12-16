@@ -322,6 +322,7 @@ if [[ "$hardware" == "hardware" ]]; then
   su - piyush -c '
     flatpak install -y flathub com.github.wwmm.easyeffects
     flatpak install -y flathub no.mifi.losslesscut
+    flatpak install -y flathub com.obsproject.Studio
   '
 fi
 if [[ "$extra" == "laptop" ]]; then
