@@ -284,11 +284,6 @@ su - piyush -c '
   git clone https://github.com/zedonix/GruvboxGtk.git ~/Documents/personal/default/GruvboxGtk
   git clone https://github.com/zedonix/GruvboxQT.git ~/Documents/personal/default/GruvboxQT
 
-  flatpak install -y flathub com.github.wwmm.easyeffects
-  flatpak install -y flathub no.mifi.losslesscut
-  flatpak install -y flathub com.github.d4nj1.tlpui
-  flatpak install -y nl.brixit.powersupply
-
   cp ~/Documents/personal/default/dotfiles/.config/sway/archLogo.png ~/Pictures/
   cp ~/Documents/personal/default/dotfiles/.config/sway/debLogo.png ~/Pictures/
   cp ~/Documents/personal/default/dotfiles/pics/* ~/Pictures/
@@ -322,6 +317,19 @@ su - piyush -c '
   docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
   docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
 '
+
+if [[ "$hardware" == "hardware" ]]; then
+  su - piyush - c '
+    flatpak install -y flathub com.github.wwmm.easyeffects
+    flatpak install -y flathub no.mifi.losslesscut
+  '
+fi
+if [[ "$extra" == "laptop" ]]; then
+  su - piyush - c '
+    flatpak install -y flathub com.github.d4nj1.tlpui
+    flatpak install -y nl.brixit.powersupply
+  '
+fi
 
 # Root dots
 mkdir -p ~/.config ~/.local/state/bash ~/.local/state/zsh
