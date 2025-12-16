@@ -319,13 +319,13 @@ su - piyush -c '
 '
 
 if [[ "$hardware" == "hardware" ]]; then
-  su - piyush - c '
+  su - piyush -c '
     flatpak install -y flathub com.github.wwmm.easyeffects
     flatpak install -y flathub no.mifi.losslesscut
   '
 fi
 if [[ "$extra" == "laptop" ]]; then
-  su - piyush - c '
+  su - piyush -c '
     flatpak install -y flathub com.github.d4nj1.tlpui
     flatpak install -y nl.brixit.powersupply
   '
