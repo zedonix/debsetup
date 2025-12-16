@@ -347,6 +347,7 @@ su - piyush -c '
     nixpkgs#wayland-pipewire-idle-inhibit \
     nixpkgs#networkmanager_dmenu \
     nixpkgs#newsraft \
+    nixpkgs#go \
     nixpkgs#javaPackages.compiler.temurin-bin.jre-17
     # nixpkgs#losslesscut-bin
     # nixpkgs#opencode
