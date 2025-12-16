@@ -358,6 +358,7 @@ su - piyush -c '
     nixpkgs#networkmanager_dmenu \
     nixpkgs#newsraft \
     nixpkgs#go \
+    nixpkgs#uv \
     nixpkgs#javaPackages.compiler.temurin-bin.jre-17
     # nixpkgs#losslesscut-bin
     # nixpkgs#opencode
