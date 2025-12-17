@@ -388,12 +388,9 @@ cmake --build build --target ananicy-cpp
 cmake --install build --component Runtime
 
 # neovim
-git clone --depth 1 --branch stable https://github.com/neovim/neovim.git
-cd neovim
-make CMAKE_BUILD_TYPE=RelWithDebInfo
-cd build
-cpack -G DEB
-dpkg -i ./*.deb
+curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
+rm -rf /opt/nvim-linux-x86_64
+tar -C /opt -xzf nvim-linux-x86_64.tar.gz
 
 # ly config
 # -e 's/^bigclock *= *.*/bigclock = en/' \
