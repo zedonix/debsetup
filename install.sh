@@ -366,7 +366,7 @@ su - piyush -c '
     # nixpkgs#losslesscut-bin
   # nix build nixpkgs#opencode --no-link --no-substitute
 '
-nix profile add nixpkgs#yazi
+nix profile add nixpkgs#yazi nixpkgs#neovim
 
 corepack enable
 corepack prepare pnpm@latest --activate
@@ -378,12 +378,6 @@ cd ananicy-cpp
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SYSTEMD=ON -DUSE_BPF_PROC_IMPL=ON -DWITH_BPF=ON
 cmake --build build --target ananicy-cpp
 cmake --install build --component Runtime
-
-# neovim
-curl -LO "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz"
-rm -rf /opt/nvim-linux-x86_64
-tar -C /opt -xzf nvim-linux-x86_64.tar.gz
-ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
 
 # Setup gruvbox theme
 THEME_SRC="/home/piyush/Documents/personal/default/GruvboxQT"
