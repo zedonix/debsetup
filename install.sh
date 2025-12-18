@@ -2,6 +2,11 @@
 # run as root
 set -euo pipefail
 
+if [ "$(id -u)" -ne 0 ]; then
+  echo "This script must be run as root"
+  exit 1
+fi
+
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 cd "$SCRIPT_DIR"
 
@@ -256,19 +261,22 @@ net.core.bpf_jit_harden = 2
 EOF
 
 # A anacron job
-echo "30 5 trash-empty-job su - piyush -c '$(which trash-empty)'" >>/etc/anacrontab
+echo "30 5 trash-empty-job runuser -u piyush -- /usr/bin/trash-empty" >>/etc/anacrontab
 
 sh <(curl -L https://nixos.org/nix/install) --daemon --yes
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak install -y org.gtk.Gtk3theme.Adwaita-dark
-flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
+flatpak --system remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak --system install -y org.gtk.Gtk3theme.Adwaita-dark
 su - piyush -c '
   mkdir -p ~/Downloads ~/Desktop ~/Public ~/Templates ~/Videos ~/Pictures/Screenshots/temp ~/.config
   mkdir -p ~/Documents/personal/default ~/Documents/projects/work ~/Documents/projects/personal ~/Documents/personal/wiki
   mkdir -p ~/.local/bin ~/.cache/cargo-target ~/.local/state/bash ~/.local/state/zsh ~/.local/share/wineprefixes
   touch ~/.local/state/bash/history ~/.local/state/zsh/history
+
   echo todo.txt > ~/Documents/personal/wiki/index.txt
   echo 1. Write some todos > ~/Documents/personal/wiki/todo.txt
+  echo "if [ -z \"\$WAYLAND_DISPLAY\" ] && [ \"\$(tty)\" = \"/dev/tty1\" ]; then
+    exec sway
+  fi" >> ~/.profile
 
   git clone https://github.com/zedonix/scripts.git ~/Documents/personal/default/scripts
   git clone https://github.com/zedonix/dotfiles.git ~/Documents/personal/default/dotfiles
@@ -298,7 +306,6 @@ su - piyush -c '
   source ~/.bashrc
 
   # Iosevka
-  cd ~/Downloads/
   mkdir -p ~/.local/share/fonts/iosevka
   cd ~/.local/share/fonts/iosevka
   curl -LO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/IosevkaTerm.zip
@@ -309,6 +316,7 @@ su - piyush -c '
   docker create --name omni-tools --restart no -p 1024:80 iib0011/omni-tools:latest
   docker create --name bentopdf --restart no -p 1025:8080 bentopdf/bentopdf:latest
   docker create --name convertx --restart no -p 1026:3000 -v ./data:/app/data ghcr.io/c4illin/convertx
+  flatpak override --user --env=GTK_THEME=Adwaita-dark --env=QT_STYLE_OVERRIDE=Adwaita-Dark
 '
 
 if [[ "$hardware" == "hardware" ]]; then
@@ -342,7 +350,6 @@ su - piyush -c '
   nix profile add \
     nixpkgs#hyprpicker \
     nixpkgs#bemoji \
-    nixpkgs#yazi \
     nixpkgs#lazydocker \
     nixpkgs#cliphist \
     nixpkgs#wl-clip-persist \
@@ -358,27 +365,11 @@ su - piyush -c '
     # nixpkgs#losslesscut-bin
   # nix build nixpkgs#opencode --no-link --no-substitute
 '
-for u in $(getent passwd | awk -F: '/^nixbld[0-9]+/ {print $1}'); do
-  userdel -r "$u"
-done
+nix profile add nixpkgs#yazi
 
 corepack enable
 corepack prepare pnpm@latest --activate
 npm install -g tree-sitter-cli
-
-# ly
-curl -LO https://ziglang.org/download/0.15.1/zig-x86_64-linux-0.15.1.tar.xz
-tar -xf zig-x86_64-linux-0.15.1.tar.xz
-mv zig-x86_64-linux-0.15.1 /opt/zig
-ln -sf /opt/zig/zig /usr/local/bin/zig
-cd /root
-tag=$(git ls-remote --tags --refs https://codeberg.org/fairyglade/ly.git | awk -F/ '{print $NF}' | sed 's/\^{}//' | sort -V | tail -n1)
-git clone --depth 1 --branch "$tag" https://codeberg.org/fairyglade/ly.git
-cd ly
-zig build -Dinit_system=systemd -Denable_x11_support=false --verbose
-zig build installexe -Dinit_system=systemd
-rm -rf /opt/zig
-rm -f /usr/local/bin/zig
 
 # ananicy-cpp
 git clone --depth 1 https://gitlab.com/ananicy-cpp/ananicy-cpp.git
@@ -388,17 +379,10 @@ cmake --build build --target ananicy-cpp
 cmake --install build --component Runtime
 
 # neovim
-curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
+curl -LO "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz"
 rm -rf /opt/nvim-linux-x86_64
 tar -C /opt -xzf nvim-linux-x86_64.tar.gz
-
-# ly config
-# -e 's/^bigclock *= *.*/bigclock = en/' \
-sed -i \
-  -e 's/^allow_empty_password *= *.*/allow_empty_password = false/' \
-  -e 's/^clear_password *= *.*/clear_password = true/' \
-  -e 's/^clock *= *.*/clock = %a %d\/%m %H:%M/' \
-  /etc/ly/config.ini
+ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
 
 # Setup gruvbox theme
 THEME_SRC="/home/piyush/Documents/personal/default/GruvboxQT"
@@ -459,7 +443,7 @@ mkdir -p /etc/systemd/zram-generator.conf.d
 # rfkill unblock bluetooth
 # modprobe btusb || true
 if [[ "$hardware" == "hardware" ]]; then
-  systemctl enable fstrim.timer acpid libvirtd.socket cups ipp-usb docker.socket libvirtd.service
+  systemctl enable fstrim.timer acpid libvirtd.socket cups ipp-usb docker.socket
   systemctl disable docker.service dnsmasq
 fi
 if [[ "$extra" == "laptop" || "$extra" == "bluetooth" ]]; then
@@ -468,10 +452,9 @@ fi
 if [[ "$extra" == "laptop" ]]; then
   systemctl enable tlp
 fi
-systemctl enable ly@tty2 ananicy-cpp
-systemctl enable NetworkManager NetworkManager-dispatcher ufw
+systemctl enable NetworkManager NetworkManager-dispatcher ufw ananicy-cpp
 systemctl mask systemd-rfkill systemd-rfkill.socket apparmor
-systemctl disable NetworkManager-wait-online.service getty@tty2.service apparmor
+systemctl disable NetworkManager-wait-online.service apparmor
 
 # Cleaning post setup
 apt remove --purge -y ccache ninja-build gettext vim-common vim-tiny libspdlog-dev nlohmann-json3-dev libfmt-dev libpipewire-0.3-dev libxcb-xkb-dev libpam0g-dev cmake g++ libsystemd-dev libsqlite3-dev libexpat1-dev libgumbo-dev libcurl4-openssl-dev pkg-config libbpf-dev libelf-dev clang bpftool dwarves zlib1g-dev nano vlc
