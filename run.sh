@@ -54,48 +54,57 @@ foot -e tmux &
 # Libvirt setup
 NEW="/home/piyush/Documents/libvirt"
 TMP="/tmp/default-pool.xml"
-VIRSH="virsh --connect qemu:///system"
 
-if dpkg -s libvirt-daemon &>/dev/null; then
-  sudo virsh net-autostart default
-  sudo virsh net-start default
+# wrapper so we don't accidentally pass a quoted command string to sudo
+virsh_connect() { sudo virsh --connect qemu:///system "$@"; }
+
+if dpkg -s libvirt-daemon >/dev/null 2>&1; then
+  # ensure default network is autostarted if present; ignore errors if already set
+  virsh_connect net-autostart default 2>/dev/null || true
+  virsh_connect net-start default 2>/dev/null || true
 
   sudo mkdir -p "$NEW"
   sudo chown -R root:libvirt "$NEW"
   sudo chmod -R 2775 "$NEW"
 
-  for p in $(sudo "$VIRSH" pool-list --all --name); do
+  # remove any existing pools that point to this path (except keep 'default' for now)
+  while IFS= read -r p; do
     [ -z "$p" ] && continue
-    if sudo "$VIRSH" pool-dumpxml "$p" | grep -q "<path>${NEW}</path>"; then
+    if virsh_connect pool-dumpxml "$p" 2>/dev/null | grep -q "<path>${NEW}</path>"; then
       if [ "$p" != "default" ]; then
-        sudo "$VIRSH" pool-destroy "$p" || true
-        sudo "$VIRSH" pool-undefine "$p" || true
+        virsh_connect pool-destroy "$p" || true
+        virsh_connect pool-undefine "$p" || true
       fi
     fi
-  done
+  done < <(virsh_connect pool-list --all --name 2>/dev/null || true)
 
-  if sudo "$VIRSH" pool-list --all | awk 'NR>2{print $1}' | grep -qx default; then
-    sudo "$VIRSH" pool-destroy default || true
-    sudo "$VIRSH" pool-undefine default || true
+  # if a 'default' storage pool exists, replace it with our path
+  if virsh_connect pool-list --all 2>/dev/null | awk 'NR>2{print $1}' | grep -qx default; then
+    virsh_connect pool-destroy default 2>/dev/null || true
+    virsh_connect pool-undefine default 2>/dev/null || true
   fi
 
-  cat <<'EOF' | sudo tee "$TMP" >/dev/null
+  # write pool XML with variable expansion
+  cat <<EOF | sudo tee "$TMP" >/dev/null
 <pool type='dir'>
   <name>default</name>
   <target><path>${NEW}</path></target>
 </pool>
 EOF
 
-  sudo "$VIRSH" pool-define "$TMP"
-  sudo "$VIRSH" pool-start default
-  sudo "$VIRSH" pool-autostart default
+  # define, start, refresh and autostart the pool
+  virsh_connect pool-define "$TMP" || true
+  virsh_connect pool-build default 2>/dev/null || true
+  virsh_connect pool-start default 2>/dev/null || true
+  virsh_connect pool-refresh default 2>/dev/null || true
+  virsh_connect pool-autostart default 2>/dev/null || true
 
-  if [ -d /var/lib/libvirt/images ] && [ "$(ls -A /var/lib/libvirt/images || true)" != "" ]; then
-    sudo rsync -aHAX --progress /var/lib/libvirt/images/ "$NEW/"
-    sudo chown -R root:libvirt -- "$NEW"
-    sudo find "$NEW" -type d -exec sudo chmod 2775 {} + || true
-    sudo find "$NEW" -type f -exec sudo chmod 0644 {} + || true
-  fi
+  # ensure files under NEW/images are world-readable where appropriate
+  sudo find "${NEW}" -type d -exec sudo chmod 2775 {} + || true
+  sudo find "${NEW}" -type f -exec sudo chmod 0644 {} + || true
 
-  sudo "$VIRSH" pool-refresh default
+  echo "Libvirt pool configured at ${NEW}"
+else
+  echo "libvirt-daemon not installed; skip configuration" >&2
+  exit 1
 fi
