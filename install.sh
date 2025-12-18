@@ -349,6 +349,7 @@ systemctl restart nix-daemon
 su - piyush -c '
   nix profile add \
     nixpkgs#hyprpicker \
+    nixpkgs#satty \
     nixpkgs#bemoji \
     nixpkgs#lazydocker \
     nixpkgs#cliphist \
