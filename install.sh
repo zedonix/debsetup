@@ -363,7 +363,6 @@ su - piyush -c '
     nixpkgs#uv \
     nixpkgs#opencode \
     nixpkgs#javaPackages.compiler.temurin-bin.jre-17
-    # nixpkgs#losslesscut-bin
   # nix build nixpkgs#opencode --no-link --no-substitute
 '
 nix profile add nixpkgs#yazi nixpkgs#neovim
