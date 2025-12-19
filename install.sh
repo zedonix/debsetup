@@ -356,7 +356,7 @@ su - piyush -c '
     nixpkgs#wl-clip-persist \
     nixpkgs#upscaler \
     nixpkgs#onlyoffice-desktopeditors \
-    nixpkgs#sway-audio-idle-inhibit \
+    nixpkgs#wayland-pipewire-idle-inhibit \
     nixpkgs#networkmanager_dmenu \
     nixpkgs#newsraft \
     nixpkgs#go \
